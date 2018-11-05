@@ -49,10 +49,10 @@ class Card:
         return self._suite
 
     def __eq__(self, other: 'Card') -> bool:
-        return self.rank == other.rank
+        return self.rank == other.rank and self.suite == other.suite
 
     def __ne__(self, other: 'Card') -> bool:
-        return self.rank != other.rank
+        return not self == other
 
     def __gt__(self, other: 'Card') -> bool:
         return self.rank > other.rank
