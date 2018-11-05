@@ -73,6 +73,23 @@ class Card:
         return Card.rank_strings[self._rank]
 
 
+class Hand:
+    def __init__(self):
+        self._cards = []
+
+    @property
+    def values(self):
+        vals = [0]
+        for card in self._cards:
+            if card.rank >= 2 and card.rank <= 10:
+                vals = [val + card.rank for val in vals]
+            elif card.rank >= 11 and card.rank <= 13:
+                vals = [val + 10 for val in vals]
+            elif card.rank == 1:
+                vals = [val + 11 for val in vals] + [val + 1 for val in vals]
+        return sorted(vals)
+
+
 class Deck:
     def __init__(self):
         self._cards = Deck._create_deck()
