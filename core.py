@@ -128,3 +128,31 @@ class Deck:
             deck.append(Card(i, Suite.hearts))
             deck.append(Card(i, Suite.spades))
         return deck
+
+
+class Player:
+    """
+    Class representing a player.
+    """
+    def __init__(self, name):
+        self._name = name
+        self._money = 0
+        self._current_bet = 0
+        self._hand = Hand()
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property 
+    def money(self) -> int:
+        return self._money
+
+    def hit(self):
+        # TODO: Draw card from deck.
+        raise NotImplementedError
+
+    def draw(self, count: int=0):
+        # TODO: Draw count cards from the deck.
+        raise NotImplementedError
+    
