@@ -87,7 +87,7 @@ class Hand:
                 vals = [val + 10 for val in vals]
             elif card.rank == 1:
                 vals = [val + 11 for val in vals] + [val + 1 for val in vals]
-        return sorted(vals)
+        return sorted(list(set(vals)))
 
 
 class Deck:

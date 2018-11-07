@@ -17,11 +17,10 @@ class TestMethods(unittest.TestCase):
 
         values = hand.values
         
-        self.assertEqual(len(values), 4)
+        self.assertEqual(len(values), 3)
         self.assertEqual(values[0], 14)
         self.assertEqual(values[1], 24)
-        self.assertEqual(values[2], 24)
-        self.assertEqual(values[3], 34)
+        self.assertEqual(values[2], 34)
 
 
 if __name__ == '__main__':
