@@ -106,8 +106,8 @@ class Deck:
     """
     Class representing a deck of cards.
     """
-    def __init__(self):
-        self._cards = Deck._create_deck()
+    def __init__(self, count: int=1):
+        self._cards = Deck._create_deck(count)
 
     @property
     def cards(self) -> List[Card]:
@@ -120,13 +120,14 @@ class Deck:
         random.shuffle(self._cards)
 
     @staticmethod
-    def _create_deck() -> List[Card]:
+    def _create_deck(count: int=1) -> List[Card]:
         deck = []
-        for i in range(1, 14):
-            deck.append(Card(i, Suite.clubs))
-            deck.append(Card(i, Suite.diamonds))
-            deck.append(Card(i, Suite.hearts))
-            deck.append(Card(i, Suite.spades))
+        for d in range(0, count):
+            for i in range(1, 14):
+                deck.append(Card(i, Suite.clubs))
+                deck.append(Card(i, Suite.diamonds))
+                deck.append(Card(i, Suite.hearts))
+                deck.append(Card(i, Suite.spades))
         return deck
 
 

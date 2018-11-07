@@ -5,6 +5,8 @@ class TestMethods(unittest.TestCase):
     def test_create_deck(self):
         deck = Deck()
         self.assertEqual(len(deck.cards), 52, "Deck does not equal 52 cards")
+        deck = Deck(2)
+        self.assertEqual(len(deck.cards), 104, "Deck does not equal 104 cards")
 
     def test_hand_value(self):
         hand = Hand()
