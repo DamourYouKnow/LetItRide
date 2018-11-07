@@ -3,6 +3,9 @@ from enum import Enum
 from typing import List
     
 class Suite(Enum):
+    """
+    Enum describing all possible card suites.
+    """
     diamonds = 1
     clubs = 2
     hearts = 3
@@ -20,6 +23,9 @@ class Suite(Enum):
 
 
 class Card:
+    """
+    Class representing a playing card.
+    """
     rank_strings = {
         1: "ace",
         2: "two",
@@ -74,11 +80,17 @@ class Card:
 
 
 class Hand:
+    """
+    Class representing the hand of a player or banker.
+    """
     def __init__(self):
         self._cards = []
 
     @property
-    def values(self):
+    def values(self) -> List[int]:
+        """
+        List of all possible values of a hand.
+        """
         vals = [0]
         for card in self._cards:
             if card.rank >= 2 and card.rank <= 10:
@@ -91,6 +103,9 @@ class Hand:
 
 
 class Deck:
+    """
+    Class representing a deck of cards.
+    """
     def __init__(self):
         self._cards = Deck._create_deck()
 
