@@ -202,10 +202,9 @@ class Player:
         return self._hand
 
     def hit(self):
-        # TODO: Draw card from deck.
-        self._hand.cards.append(self._game.deck.draw())
+        self.draw()
 
-    def draw(self, count: int=0):
-        # TODO: Draw count cards from the deck.
-        raise NotImplementedError
+    def draw(self, count: int=1):
+        for _ in range(0, count):
+            self._hand.cards.append(self._game.deck.draw())
     
