@@ -101,6 +101,10 @@ class Hand:
         self._cards = []
 
     @property
+    def cards(self) -> List[Card]:
+        return self._cards
+        
+    @property
     def values(self) -> List[int]:
         """
         List of all possible values of a hand.
@@ -114,6 +118,9 @@ class Hand:
             elif card.rank == 1:
                 vals = [val + 11 for val in vals] + [val + 1 for val in vals]
         return sorted(list(set(vals)))
+
+    def __len__(self):
+        return len(self._cards)
 
 
 class Deck:
@@ -133,6 +140,9 @@ class Deck:
     def shuffle(self):
         random.shuffle(self._cards)
 
+    def __len__(self):
+        return len(self._cards)
+
     @staticmethod
     def _create_deck(count: int=1) -> List[Card]:
         deck = []
@@ -145,11 +155,35 @@ class Deck:
         return deck
 
 
+class Game:
+    """
+    Class representing a blackjack game.
+    """
+    def __init__(self):
+        self._deck = Deck(2)
+        self._players = []
+        self._banker = None
+
+    @property
+    def deck(self) -> Deck:
+        return self._deck
+    
+    @property
+    def players(self) -> List['Player']:
+        return self._players
+
+    @property
+    def banker(self):
+        # TODO: Define Banker.
+        return self._banker
+
+    
 class Player:
     """
     Class representing a player.
     """
-    def __init__(self, name):
+    def __init__(self, game: Game, name: str="Player"):
+        self._game = game
         self._name = name
         self._money = 0
         self._current_bet = 0
@@ -163,9 +197,13 @@ class Player:
     def money(self) -> int:
         return self._money
 
+    @property
+    def hand(self) -> Hand:
+        return self._hand
+
     def hit(self):
         # TODO: Draw card from deck.
-        raise NotImplementedError
+        self._hand.cards.append(self._game.deck.draw())
 
     def draw(self, count: int=0):
         # TODO: Draw count cards from the deck.
