@@ -21,6 +21,16 @@ class Suite(Enum):
 
         return strings[self.value]
 
+    def to_char(self) -> str:
+        chars = {
+            Suite.diamonds: 'D',
+            Suite.clubs: 'C',
+            Suite.hearts: 'H',
+            Suite.spades: 'S'
+        }
+
+        return chars[self.value]
+
 
 class Card:
     """
@@ -53,6 +63,10 @@ class Card:
     @property
     def suite(self):
         return self._suite
+
+    @property
+    def filename(self):
+        return "./assets/" + str(self.rank) + self.suite.to_char() 
 
     def __eq__(self, other: 'Card') -> bool:
         return self.rank == other.rank and self.suite == other.suite
