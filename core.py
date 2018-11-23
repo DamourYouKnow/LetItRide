@@ -103,21 +103,6 @@ class Hand:
     @property
     def cards(self) -> List[Card]:
         return self._cards
-        
-    @property
-    def values(self) -> List[int]:
-        """
-        List of all possible values of a hand.
-        """
-        vals = [0]
-        for card in self._cards:
-            if card.rank >= 2 and card.rank <= 10:
-                vals = [val + card.rank for val in vals]
-            elif card.rank >= 11 and card.rank <= 13:
-                vals = [val + 10 for val in vals]
-            elif card.rank == 1:
-                vals = [val + 11 for val in vals] + [val + 1 for val in vals]
-        return sorted(list(set(vals)))
 
     def __len__(self):
         return len(self._cards)
@@ -161,21 +146,15 @@ class Game:
     """
     def __init__(self):
         self._deck = Deck(2)
-        self._players = []
-        self._banker = None
+        self._player = None
 
     @property
     def deck(self) -> Deck:
         return self._deck
     
     @property
-    def players(self) -> List['Player']:
-        return self._players
-
-    @property
-    def banker(self):
-        # TODO: Define Banker.
-        return self._banker
+    def player(self) -> 'Player':
+        return self._player
 
     
 class Player:
@@ -200,9 +179,6 @@ class Player:
     @property
     def hand(self) -> Hand:
         return self._hand
-
-    def hit(self):
-        self.draw()
 
     def draw(self, count: int=1):
         for _ in range(0, count):
