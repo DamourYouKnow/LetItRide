@@ -19,7 +19,7 @@ class Suite(Enum):
             Suite.spades: "spades"
         }
 
-        return strings[self.value]
+        return strings[self]
 
     def to_char(self) -> str:
         chars = {
@@ -29,7 +29,41 @@ class Suite(Enum):
             Suite.spades: 'S'
         }
 
-        return chars[self.value]
+        return chars[self]
+
+
+class HandType(Enum):
+    """
+    Enum describing all possible hand types.
+    """
+    royal_flush = 1
+    straight_flush = 2
+    four_of_kind = 3
+    full_house = 4
+    flush = 5
+    straight = 6
+    three_of_kind = 7
+    two_pair = 8
+    high_pair = 9
+    pair = 10
+    high = 11
+
+    def __str__(self) -> str:
+        strings = {
+            HandType.royal_flush: "royal flush",
+            HandType.straight_flush: "straight flush",
+            HandType.four_of_kind: "four of a kind",
+            HandType.full_house: "full house",
+            HandType.flush: "flush",
+            HandType.straight: "straight",
+            HandType.three_of_kind: "three of a kind",
+            HandType.two_pair: "two pair",
+            HandType.high_pair: "high pair",
+            HandType.pair: "pair",
+            HandType.high: "high"
+        }
+
+        return strings[self]
 
 
 class Card:
@@ -97,8 +131,8 @@ class Hand:
     """
     Class representing the hand of a player or banker.
     """
-    def __init__(self):
-        self._cards = []
+    def __init__(self, cards: List[Card]=[]):
+        self._cards = cards
 
     @property
     def cards(self) -> List[Card]:
@@ -106,6 +140,48 @@ class Hand:
 
     def __len__(self):
         return len(self._cards)
+
+    @property
+    def type(self) -> HandType:
+        hand = self._cards.copy()
+        hand.sort()
+        size = len(hand)
+
+        royals = [1, 10, 11, 12, 13]
+        ranks = [card.rank for card in hand]
+        is_royal = all([c.rank in royals for c in hand])
+        is_straight = ranks == list(range(ranks[0], ranks[-1] + 1)) or is_royal
+        is_flush = len([c for c in hand if c.suite == hand[0].suite]) == size
+
+        if is_royal and is_flush:
+            return HandType.royal_flush
+        if is_straight and is_flush:
+            return HandType.straight_flush
+        if is_straight:
+            return HandType.straight
+        if is_flush:
+            return HandType.flush
+
+        count_map = {
+            c.rank: len([c2 for c2 in hand if c2.rank == c.rank]) for c in hand
+        }
+        counts = list(count_map.values())
+
+        if counts.count(4) == 1:
+            return HandType.four_of_kind
+        if counts.count(3) == 1 and counts.count(2) == 1:
+            return HandType.full_house
+        if counts.count(3) == 1:
+            return HandType.three_of_kind
+        if counts.count(2) == 2:
+            return HandType.two_pair
+        if counts.count(2) == 1:
+            if [c for c in hand if c.rank in royals and count_map[c.rank] == 2]:
+                return HandType.high_pair
+            else:
+                return HandType.pair
+
+        return HandType.high
 
 
 class Deck:
@@ -183,4 +259,4 @@ class Player:
     def draw(self, count: int=1):
         for _ in range(0, count):
             self._hand.cards.append(self._game.deck.draw())
-    
+
