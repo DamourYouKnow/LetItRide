@@ -13,23 +13,12 @@ class Suite(Enum):
 
     def __str__(self) -> str:
         strings = {
-            Suite.diamonds: "diamonds",
-            Suite.clubs: "clubs",
-            Suite.hearts: "hearts",
-            Suite.spades: "spades"
+            Suite.diamonds: "♢",
+            Suite.clubs: "♣",
+            Suite.hearts: "♡",
+            Suite.spades: "♠"
         }
-
         return strings[self]
-
-    def to_char(self) -> str:
-        chars = {
-            Suite.diamonds: 'D',
-            Suite.clubs: 'C',
-            Suite.hearts: 'H',
-            Suite.spades: 'S'
-        }
-
-        return chars[self]
 
 
 class HandType(Enum):
@@ -62,7 +51,6 @@ class HandType(Enum):
             HandType.pair: "pair",
             HandType.high: "high"
         }
-
         return strings[self]
 
 
@@ -70,22 +58,6 @@ class Card:
     """
     Class representing a playing card.
     """
-    rank_strings = {
-        1: "ace",
-        2: "two",
-        3: "three",
-        4: "four",
-        5: "five",
-        6: "six",
-        7: "seven",
-        8: "eight",
-        9: "nine",
-        10: "ten",
-        11: "jack",
-        12: "queen",
-        13: "king"
-    }
-
     def __init__(self, rank: int, suite: Suite):
         self._rank = rank
         self._suite = suite
@@ -121,10 +93,10 @@ class Card:
         return self.rank <= other.rank
 
     def __str__(self) -> str:
-        return self._rank_str().title() + " of " + str(self._suite).title()
-   
-    def _rank_str(self) -> str:
-        return Card.rank_strings[self._rank]
+        rank_str = str(self._rank)
+        if self._rank == 1 or self._rank >= 11:
+            rank_str = {1: 'A', 11: 'J', 12: 'Q', 13: 'K'}[self._rank]
+        return rank_str + str(self._suite)
 
 
 class Hand:
