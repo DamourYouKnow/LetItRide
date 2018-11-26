@@ -135,5 +135,24 @@ class TestMethods(unittest.TestCase):
         ]
         self.assertEqual(Hand(cards).type, HandType.high)
 
+    def test_payout(self):
+        cards = [
+            Card(3, Suite.hearts),
+            Card(5, Suite.clubs),
+            Card(6, Suite.diamonds),
+            Card(7, Suite.clubs),
+            Card(8, Suite.clubs)
+        ]
+        self.assertEqual(Hand(cards).payout, 0)
+
+        cards = [
+            Card(1, Suite.hearts),
+            Card(1, Suite.clubs),
+            Card(1, Suite.diamonds),
+            Card(2, Suite.clubs),
+            Card(3, Suite.clubs)
+        ]
+        self.assertEqual(Hand(cards).payout, 3)
+
 if __name__ == '__main__':
     unittest.main()

@@ -131,6 +131,18 @@ class Hand:
     """
     Class representing the hand of a player or banker.
     """
+    main_payouts = {
+        HandType.royal_flush: 1000,
+        HandType.straight_flush: 200,
+        HandType.four_of_kind: 50,
+        HandType.full_house: 11,
+        HandType.flush: 8,
+        HandType.straight: 5,
+        HandType.three_of_kind: 3,
+        HandType.two_pair: 2,
+        HandType.high_pair: 1
+    }
+
     def __init__(self, cards: List[Card]=[]):
         self._cards = cards
 
@@ -140,6 +152,12 @@ class Hand:
 
     def __len__(self):
         return len(self._cards)
+
+    @property
+    def payout(self) -> int:
+        if self.type in Hand.main_payouts:
+            return Hand.main_payouts[self.type]
+        return 0
 
     @property
     def type(self) -> HandType:
