@@ -49,6 +49,7 @@ class MainMenu(Screen):
         self._buttons = [
             Button(20, 20, "Hello!", Color(0,128,100,1), fontSize=30, action=self._to_game)
         ]
+        self._labels = [Label(50, 50, "Let It Ride Poker", fontSize = 50)]
 
     def _to_game(self):
         self._next_screen = GameScreen()
@@ -56,11 +57,13 @@ class MainMenu(Screen):
     @property
     def buttons(self):
         return self._buttons
+    @property
+    def labels(self):
+        return self._labels
 
     def handle(self, event: Event):
-        if event.type == pygame.MOUSEBUTTONUP:
-            for button in self.buttons:
-                button.handleClick(event)
+        for button in self.buttons:
+            button.handleClick(event)
 
     def update(self):
         pass
@@ -69,14 +72,48 @@ class MainMenu(Screen):
         canvas.fill(Color(255, 255, 255, 1))
         for button in self.buttons:
             button.draw(canvas)
-            
+        for label in self.labels:
+            label.draw(canvas)
     
     def next(self):
         return self._next_screen
 
+class Label:
+    def __init__(self, x: int, y: int, text: string, color: Color = Color(0,0,0,1), fontSize: int = 20,
+        fontName: string = "Times"):
+        self._x = x
+        self._y = y
+        self._text = text
+        self._color = color
+        self._font = pygame.font.SysFont(fontName, fontSize)
+    
+    @property
+    def x(self) -> int:
+        return self._x
+
+    @property
+    def y(self) -> int:
+        return self._y
+
+    @property
+    def text(self) -> string:
+        return self._text
+
+    @property
+    def color(self) -> Color:
+        return self._color
+
+    @property
+    def font(self) -> Font:
+        return self._font
+
+    def draw(self, canvas: Surface):
+        textSurface = self.font.render(self.text, False, self.color)
+        canvas.blit(textSurface, (self.x, self.y))
+
 class Button:
 
-    def __init__(self, x: int, y: int, text: string, color: Color, 
+    def __init__(self, x: int, y: int, text: string, color: Color, downColor: Color = Color(0,0,0,1),
                  borderWidth: int = 2, borderColor: Color = Color(0,0,0,1), 
                  fontSize: int = 20, fontName: string = "Times", padding: int = 4, 
                  width: int = (-1), height: int = (-1), action = None):
@@ -89,6 +126,8 @@ class Button:
         self._borderWidth = borderWidth
         self._font = pygame.font.SysFont(fontName, fontSize)
         self._action = action
+        self._downColor = downColor
+        self._isDown = False
         if height < 0:
             self._height = fontSize + 2 * self.padding
         else:
@@ -146,10 +185,27 @@ class Button:
     @property
     def action(self):
         return self._action
+
+    @property
+    def downColor(self):
+        return self._downColor
+    
+    @property
+    def isDown(self):
+        return self._isDown
+    
+    def setDown(self, isDown):
+        self._isDown = isDown
+
+    def getColor(self):
+        if (self.isDown):
+            return self.downColor
+        else:
+            return self.color
     
     def draw(self, canvas: Surface):
         pygame.draw.rect(canvas, self._borderColor, self.rect)
-        pygame.draw.rect(canvas, self.color, 
+        pygame.draw.rect(canvas, self.getColor(), 
             Rect(self.x+self.borderWidth,
                  self.y+self.borderWidth,
                  self.width - 2*self.borderWidth,
@@ -159,5 +215,12 @@ class Button:
     
     def handleClick(self, event: Event):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
-            if not (self.action == None):
+            if event.type == pygame.MOUSEBUTTONUP and not (self.action == None):
                 self.action()
+                self.setDown(False)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self.setDown(True)
+            else:
+                self.setDown(False)
+        else:
+            self.setDown(False)
