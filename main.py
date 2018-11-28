@@ -6,7 +6,7 @@ if __name__ == '__main__':
     print("MATH 3808 Final Project")
 
     pygame.init()
-    canvas = pygame.display.set_mode((800, 500))
+    canvas = pygame.display.set_mode((1200, 675))
     screen = MainMenu()
 
     while True:

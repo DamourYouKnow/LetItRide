@@ -37,6 +37,8 @@ class GameScreen(Screen):
             CardComponent(400, 100, self.game.player.hand.firstBet(), False),
             CardComponent(200, 100, self.game.player.hand.secondBet(), False),
         ]
+        self._background = pygame.image.load("./assets/felt.png")
+
         
     @property
     def game(self) -> Game:
@@ -55,6 +57,7 @@ class GameScreen(Screen):
 
     def draw(self, canvas: Surface):
         canvas.fill(Color(255, 255, 255, 1))
+        canvas.blit(self._background, (0,0))
         self._ride_button.draw(canvas)
         for card in self.cards:
             card.draw(canvas)
