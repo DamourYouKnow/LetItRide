@@ -76,7 +76,7 @@ class Card:
 
     @property
     def filename(self):
-        return "./assets/" + str(self.rank) + self.suite.to_char() 
+        return "./assets/" + str(self.rank) + str(self.suite) + ".png"
 
     def __eq__(self, other: 'Card') -> bool:
         return self.rank == other.rank and self.suite == other.suite
@@ -135,6 +135,15 @@ class Hand:
             return Hand.main_payouts[self.type]
         return 0
 
+    def playerCards(self) -> List[Card]:
+        return self.cards[0:3]
+
+    def firstBet(self) -> Card:
+        return self.cards[3]
+    
+    def secondBet(self) -> Card:
+        return self.cards[4]
+
     @property
     def type(self) -> HandType:
         hand = self._cards.copy()
@@ -192,6 +201,12 @@ class Deck:
     def draw(self) -> Card:
         return self._cards.pop()
 
+    def drawHand(self, num: int = 5) -> Card:
+        hand = []
+        for i in range(0,num):
+            hand.append(self.draw())
+        return hand
+
     def shuffle(self):
         random.shuffle(self._cards)
 
@@ -214,9 +229,10 @@ class Game:
     """
     Class representing a blackjack game.
     """
-    def __init__(self):
+    def __init__(self, decks: int = 2, name: str="Player", money: int = 1000):
         self._deck = Deck(2)
-        self._player = None
+        self._player = Player(self, name, money)
+        self.deck.shuffle()
 
     @property
     def deck(self) -> Deck:
@@ -225,18 +241,21 @@ class Game:
     @property
     def player(self) -> 'Player':
         return self._player
+    
+    def deal(self):
+        self.player.setHand(Hand(self.deck.drawHand()))
 
     
 class Player:
     """
     Class representing a player.
     """
-    def __init__(self, game: Game, name: str="Player"):
+    def __init__(self, game: Game, name: str, money: int):
         self._game = game
         self._name = name
         self._money = 0
         self._current_bet = 0
-        self._hand = Hand()
+        self._hand = None
 
     @property
     def name(self) -> str:
@@ -249,6 +268,9 @@ class Player:
     @property
     def hand(self) -> Hand:
         return self._hand
+
+    def setHand(self, hand):
+        self._hand = hand
 
     def draw(self, count: int=1):
         for _ in range(0, count):

@@ -4,6 +4,7 @@ from pygame.event import Event
 from pygame.font import Font
 import pygame
 import string
+from core import *
 
 class Screen(ABC):
 
@@ -26,8 +27,25 @@ class Screen(ABC):
 class GameScreen(Screen):
     def __init__(self):
         self._ride_button = Button(
-                0, 0, "Let it Ride", Color(100, 100, 100, 1)) 
+                0, 0, "Let it Ride", Color(100, 100, 100, 1), action=(lambda: self.cards[3].flip())) 
+        self._game = Game()
+        self.game.deal()
+        self._cards = [
+            CardComponent(100, 300, self.game.player.hand.playerCards()[0]),
+            CardComponent(300, 300, self.game.player.hand.playerCards()[1]),
+            CardComponent(500, 300, self.game.player.hand.playerCards()[2]),
+            CardComponent(200, 100, self.game.player.hand.firstBet(), False),
+            CardComponent(400, 100, self.game.player.hand.secondBet(), False),
+        ]
         
+    @property
+    def game(self) -> Game:
+        return self._game
+
+    @property
+    def cards(self):
+        return self._cards
+
     def handle(self, event: Event):
         if event.type == pygame.MOUSEBUTTONUP:
             self._ride_button.handleClick(event)
@@ -38,6 +56,8 @@ class GameScreen(Screen):
     def draw(self, canvas: Surface):
         canvas.fill(Color(255, 255, 255, 1))
         self._ride_button.draw(canvas)
+        for card in self.cards:
+            card.draw(canvas)
 
     def next(self):
         return self
@@ -110,6 +130,49 @@ class Label:
     def draw(self, canvas: Surface):
         textSurface = self.font.render(self.text, False, self.color)
         canvas.blit(textSurface, (self.x, self.y))
+
+class CardComponent:
+    def __init__(self, x: int, y: int, card: Card, flipped: bool = True):
+        self._x = x
+        self._y = y
+        self._card = card
+        self._flipped = flipped
+        self._cardImg = pygame.image.load(self.card.filename)
+        self._cardBack = pygame.image.load("./assets/card_back.png")
+    
+    @property
+    def x(self) -> int:
+        return self._x
+    
+    @property
+    def y(self) -> int:
+        return self._y
+    
+    @property
+    def card(self) -> int:
+        return self._card
+    
+    @property
+    def cardImg(self):
+        return self._cardImg
+    
+    @property
+    def cardBack(self):
+        return self._cardBack
+
+    @property
+    def flipped(self) -> bool:
+        return self._flipped
+
+    def flip(self):
+        self._flipped = not (self._flipped)
+
+    def draw(self, canvas):
+        if self.flipped:
+            canvas.blit(self.cardImg, (self.x, self.y))
+        else:
+            canvas.blit(self.cardBack, (self.x, self.y))
+
 
 class Button:
 
