@@ -23,11 +23,36 @@ class Screen(ABC):
     def next(self):
         return self
 
-class MainMenu(Screen):
-
+class GameScreen(Screen):
     def __init__(self):
-        self._buttons = [Button(20, 20, "Hello!", Color(0,128,100,1), fontSize=30, action=(lambda: print("Testing!")))]
+        self._ride_button = Button(
+                0, 0, "Let it Ride", Color(100, 100, 100, 1)) 
+        
+    def handle(self, event: Event):
+        if event.type == pygame.MOUSEBUTTONUP:
+            self._ride_button.handleClick(event)
 
+    def update(self):
+        pass
+
+    def draw(self, canvas: Surface):
+        canvas.fill(Color(255, 255, 255, 1))
+        self._ride_button.draw(canvas)
+
+    def next(self):
+        return self
+
+
+class MainMenu(Screen):
+    def __init__(self):
+        self._next_screen = self
+        self._buttons = [
+            Button(20, 20, "Hello!", Color(0,128,100,1), fontSize=30, action=self._to_game)
+        ]
+
+    def _to_game(self):
+        self._next_screen = GameScreen()
+    
     @property
     def buttons(self):
         return self._buttons
@@ -47,7 +72,7 @@ class MainMenu(Screen):
             
     
     def next(self):
-        return self
+        return self._next_screen
 
 class Button:
 
