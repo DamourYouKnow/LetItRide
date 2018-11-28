@@ -13,10 +13,11 @@ class Suite(Enum):
 
     def __str__(self) -> str:
         strings = {
-            Suite.diamonds: "♢",
-            Suite.clubs: "♣",
-            Suite.hearts: "♡",
-            Suite.spades: "♠"
+            Suite.diamonds: "D",
+            Suite.clubs: "C",
+            Suite.hearts: "H",
+            Suite.spades: "S"
+
         }
         return strings[self]
 
@@ -69,6 +70,9 @@ class Card:
     @property
     def suite(self):
         return self._suite
+
+    def __str__(self):
+        return str(self.rank) + str(self.suite)
 
     @property
     def filename(self):
@@ -139,7 +143,7 @@ class Hand:
 
         royals = [1, 10, 11, 12, 13]
         ranks = [card.rank for card in hand]
-        is_royal = all([c.rank in royals for c in hand])
+        is_royal = all([r in ranks for r in royals])
         is_straight = ranks == list(range(ranks[0], ranks[-1] + 1)) or is_royal
         is_flush = len([c for c in hand if c.suite == hand[0].suite]) == size
 
