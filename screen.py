@@ -34,8 +34,8 @@ class GameScreen(Screen):
             CardComponent(100, 300, self.game.player.hand.playerCards()[0]),
             CardComponent(300, 300, self.game.player.hand.playerCards()[1]),
             CardComponent(500, 300, self.game.player.hand.playerCards()[2]),
-            CardComponent(200, 100, self.game.player.hand.firstBet(), False),
-            CardComponent(400, 100, self.game.player.hand.secondBet(), False),
+            CardComponent(400, 100, self.game.player.hand.firstBet(), False),
+            CardComponent(200, 100, self.game.player.hand.secondBet(), False),
         ]
         
     @property
@@ -139,6 +139,9 @@ class CardComponent:
         self._flipped = flipped
         self._cardImg = pygame.image.load(self.card.filename)
         self._cardBack = pygame.image.load("./assets/card_back.png")
+        self._flipping = False
+        self._shouldFlip = False
+        self._flipX = 0
     
     @property
     def x(self) -> int:
@@ -164,10 +167,36 @@ class CardComponent:
     def flipped(self) -> bool:
         return self._flipped
 
-    def flip(self):
-        self._flipped = not (self._flipped)
+    @property
+    def flipping(self) -> bool:
+        return self._flipping
+    
+    @property
+    def flipX(self) -> int:
+        return self._flipX
 
+    def flip(self):
+            self._flipping = True
+            self._flipX = 0
+    
     def draw(self, canvas):
+        if self.flipping:
+            if (self.flipX >= self.cardImg.get_width()):
+                self._flipped = not(self._flipped)
+                self._flipX = 0
+                self._flipping = False
+            elif (2*self.flipX >= self.cardImg.get_width()):
+                img = self.cardBack if self.flipped else self.cardImg
+                img = pygame.transform.scale(img, (img.get_width()-2*(img.get_width() - self.flipX), img.get_height()))
+                canvas.blit(img, (self.x + (self.cardImg.get_width() - self.flipX), self.y))
+                self._flipX = self.flipX + 10
+                return
+            else:
+                img = self.cardImg if self.flipped else self.cardBack
+                img = pygame.transform.scale(img, (img.get_width()-2*self.flipX, img.get_height()))
+                canvas.blit(img, (self.x + self.flipX, self.y))
+                self._flipX = self.flipX + 10
+                return
         if self.flipped:
             canvas.blit(self.cardImg, (self.x, self.y))
         else:
