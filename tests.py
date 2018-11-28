@@ -155,9 +155,9 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(Hand(cards).payout, 3)
 
     def test_card_str(self):
-        self.assertEqual(str(Card(1, Suite.clubs)), "A♣")
-        self.assertEqual(str(Card(2, Suite.diamonds)), "2♢")
-        self.assertEqual(str(Card(11, Suite.hearts)), "J♡")
+        self.assertEqual(str(Card(1, Suite.clubs)), "AC")
+        self.assertEqual(str(Card(2, Suite.diamonds)), "2D")
+        self.assertEqual(str(Card(11, Suite.hearts)), "JH")
         
 
 if __name__ == '__main__':
