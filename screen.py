@@ -37,18 +37,27 @@ class GameScreen(Screen):
         self._stage = 0
         self._bankroll = Button(100, 500, height=50, text="Bankroll: ", color=Color(255,255,255,1), downColor=Color(255,255,255,1), padding=5, borderColor=Color(0,0,0,1))
         payoffTexts = ["%s: %d" % (str(x), Hand.main_payouts[x] if x in Hand.main_payouts else 0) for x in HandType if x != HandType.high and x != HandType.pair]
-        self._display = [Button(800, 100+30*i, width=200, height=30, text=x, color=Color(255,255,255,1), borderColor=None) for i, x in enumerate(payoffTexts)]
+        self._display = [Button(900, 50+30*i, width=200, height=30, text=x, color=Color(255,255,255,1), borderColor=None) for i, x in enumerate(payoffTexts)]
+        self._deck = CardComponent(700, 50, Card(1, Suite.clubs), False)
 
     def action(self, pull=False):
         if (self._stage == 0):
             self.game.bet(1)
             self._cards = [
-                CardComponent(100, 300, self.game.player.hand.playerCards()[0]),
-                CardComponent(300, 300, self.game.player.hand.playerCards()[1]),
-                CardComponent(500, 300, self.game.player.hand.playerCards()[2]),
-                CardComponent(400, 100, self.game.player.hand.firstBet(), False),
-                CardComponent(200, 100, self.game.player.hand.secondBet(), False),
+                CardComponent(700, 50, self.game.player.hand.playerCards()[0], False),
+                CardComponent(700, 50, self.game.player.hand.playerCards()[1], False),
+                CardComponent(700, 50, self.game.player.hand.playerCards()[2], False),
+                CardComponent(700, 50, self.game.player.hand.firstBet(), False),
+                CardComponent(700, 50, self.game.player.hand.secondBet(), False),
             ]
+            self._cards[0].deal(100, 300)
+            self._cards[1].deal(300, 300)
+            self._cards[2].deal(500, 300)
+            self._cards[3].deal(400, 100)
+            self._cards[4].deal(200, 100)
+            self._cards[0].flip()
+            self._cards[1].flip()
+            self._cards[2].flip()
             self._stage = 1
             self._pull = Button(300, 575, width=128, height=50, text="Pull Bet 1", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
             action=(lambda: self.action(True)))
@@ -100,6 +109,7 @@ class GameScreen(Screen):
         canvas.blit(self._background, (0,0))
         self._action.draw(canvas)
         self._bankroll.draw(canvas)
+        self._deck.draw(canvas)
         for x in self._display:
             x.draw(canvas) 
         if (self._pull != None):
@@ -192,6 +202,7 @@ class CardComponent:
         self._flipping = False
         self._shouldFlip = False
         self._flipX = 0
+        self._deal = False
     
     @property
     def x(self) -> int:
@@ -226,10 +237,27 @@ class CardComponent:
         return self._flipX
 
     def flip(self):
-            self._flipping = True
-            self._flipX = 0
+        self._flipping = True
+        self._flipX = 0
     
+    def deal(self, targetX, targetY):
+        self._deal = True
+        self._targetX = targetX
+        self._targetY = targetY
+        self._dealX = self.x
+        self._dealY = self.y
+
     def draw(self, canvas):
+        if self._deal:
+            if (self._dealX == self._targetX and self._dealY == self._targetY):
+                self._deal = False
+                self._x = self._targetX
+                self._y = self._targetY
+            else:
+                self._dealX += (self._targetX-self._x)/10
+                self._dealY += (self._targetY-self._y)/10
+                canvas.blit(self.cardBack, (self._dealX, self._dealY))
+                return
         if self.flipping:
             if (self.flipX >= self.cardImg.get_width()):
                 self._flipped = not(self._flipped)
