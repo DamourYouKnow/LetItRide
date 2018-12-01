@@ -51,10 +51,10 @@ class GameScreen(Screen):
                 CardComponent(700, 50, self.game.player.hand.secondBet(), False),
             ]
             self._cards[0].deal(100, 300)
-            self._cards[1].deal(300, 300)
-            self._cards[2].deal(500, 300)
-            self._cards[3].deal(400, 100)
-            self._cards[4].deal(200, 100)
+            self._cards[1].deal(200, 300)
+            self._cards[2].deal(300, 300)
+            self._cards[3].deal(400, 300)
+            self._cards[4].deal(500, 300)
             self._cards[0].flip()
             self._cards[1].flip()
             self._cards[2].flip()
