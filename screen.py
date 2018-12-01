@@ -39,23 +39,29 @@ class GameScreen(Screen):
         payoffTexts = ["%s: %d" % (str(x), Hand.main_payouts[x] if x in Hand.main_payouts else 0) for x in HandType if x != HandType.high and x != HandType.pair]
         self._display = [Button(900, 50+30*i, width=200, height=30, text=x, color=Color(255,255,255,1), borderColor=None) for i, x in enumerate(payoffTexts)]
         self._deck = CardComponent(700, 50, Card(1, Suite.clubs), False)
+        self._bet_labels = [Button(210, 400, "$", width=80, height=30, color=Color(199,199,199,1), borderColor=None),
+            Button(310, 400, "2", width=80, height=30, color=Color(199,199,199,1), borderColor=None),
+            Button(410, 400, "1", width=80, height=30, color=Color(199,199,199,1), borderColor=None)]
+        self._bets = [Button(210, 430, None, width=80, height=30, color=Color(199,199,199,1), borderColor = None),
+            Button(310, 430, None, width=80, height=30, color=Color(199,199,199,1), borderColor = None),
+            Button(410, 430, None, width=80, height=30, color=Color(199,199,199,1), borderColor = None)]
 
     def action(self, pull=False):
         if (self._stage == 0):
             self.game.bet(1)
-
+            for bet in self._bets:
+                bet.setText("$" + str(1))
             self._cards = [CardComponent(700, 50, c, False) for c in self.game.player.hand]
-
-            self._cards[0].deal(100, 300)
-            self._cards[1].deal(200, 300)
-            self._cards[2].deal(300, 300)
-            self._cards[3].deal(400, 300)
-            self._cards[4].deal(500, 300)
+            self._cards[0].deal(100, 200)
+            self._cards[1].deal(200, 200)
+            self._cards[2].deal(300, 200)
+            self._cards[3].deal(400, 200)
+            self._cards[4].deal(500, 200)
             self._cards[0].flip()
             self._cards[1].flip()
             self._cards[2].flip()
             self._stage = 1
-            self._pull = Button(300, 575, width=128, height=50, text="Pull Bet 1", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
+            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 1", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
             action=(lambda: self.action(True)))
             self._action._text = "Let it ride"
             self._winning = None
@@ -63,13 +69,17 @@ class GameScreen(Screen):
             self._stage = 2
             self._cards[3].flip()
             self.game.firstBet(pull)
-            self._pull = Button(300, 575, width=128, height=50, text="Pull Bet 2", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
+            if (pull):
+                self._bets[2].setText("")
+            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 2", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
                 action=(lambda: self.action(True)))
         elif (self._stage == 2):
             self._stage = 0
             self.game.secondBet(pull)
+            if (pull):
+                self._bets[1].setText("")
             self._cards[4].flip()
-            self._pull = Button(300, 575, width=128, height=50, text="Clear Bet", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
+            self._pull = Button(500, 500, width=128, height=50, text="Clear Bet", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
                 action=(lambda: self.clear()))
             payout = self.game.payout()
             winText = str(self.game.player.hand.type) + " - Win $" + str(payout)
@@ -83,6 +93,8 @@ class GameScreen(Screen):
             self._action._text = "Make 1$ Bet"
             self._cards = []
             self._winning = None
+            for bet in self._bets:
+                bet.setText(None)
 
     @property
     def game(self) -> Game:
@@ -114,6 +126,11 @@ class GameScreen(Screen):
             self._winning.draw(canvas)
         for card in self.cards:
             card.draw(canvas)
+        for bet in self._bet_labels:
+            bet.draw(canvas)
+        for bet in self._bets:
+            if (bet.text != None):
+                bet.draw(canvas)
 
     def next(self):
         return self
