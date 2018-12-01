@@ -40,17 +40,17 @@ class HandType(Enum):
 
     def __str__(self) -> str:
         strings = {
-            HandType.royal_flush: "royal flush",
-            HandType.straight_flush: "straight flush",
-            HandType.four_of_kind: "four of a kind",
-            HandType.full_house: "full house",
-            HandType.flush: "flush",
-            HandType.straight: "straight",
-            HandType.three_of_kind: "three of a kind",
-            HandType.two_pair: "two pair",
-            HandType.high_pair: "high pair",
-            HandType.pair: "pair",
-            HandType.high: "high"
+            HandType.royal_flush: "Royal Flush",
+            HandType.straight_flush: "Straight Flush",
+            HandType.four_of_kind: "Four of a Kind",
+            HandType.full_house: "Full House",
+            HandType.flush: "Flush",
+            HandType.straight: "Straight",
+            HandType.three_of_kind: "Three of a Kind",
+            HandType.two_pair: "Two Pair",
+            HandType.high_pair: "10s or Better",
+            HandType.pair: "Nothing",
+            HandType.high: "Nothing"
         }
         return strings[self]
 
@@ -229,9 +229,13 @@ class Game:
     """
     Class representing a blackjack game.
     """
-    def __init__(self, decks: int = 2, name: str="Player", money: int = 1000):
-        self._deck = Deck(2)
+    def __init__(self, decks: int = 1, name: str="Player", money: int = 1000):
+        self._deck_count = decks
+        self._deck = Deck(decks)
         self._player = Player(self, name, money)
+        self._current_bet_0 = 0
+        self._current_bet_1 = 0
+        self._current_bet_2 = 0
         self.deck.shuffle()
 
     @property
@@ -245,6 +249,30 @@ class Game:
     def deal(self):
         self.player.setHand(Hand(self.deck.drawHand()))
 
+    def payout(self) -> int:
+        payout = (self.player.hand.payout+1)*(self._current_bet_0 + self._current_bet_1 + self._current_bet_2) if self.player.hand.payout != 0 else 0
+        self.player._money = self.player.money + payout
+        return payout
+
+
+    def firstBet(self, pull: bool):
+        if (pull):
+            self.player._money = self.player.money + self._current_bet_1
+            self._current_bet_1 = 0
+    
+    def secondBet(self, pull: bool):
+        if (pull):
+            self.player._money = self.player.money + self._current_bet_2
+            self._current_bet_2 = 0
+
+    def bet(self, bet: int):
+        self.player._money = self.player._money - 3*bet
+        self._current_bet_0 = bet
+        self._current_bet_1 = bet
+        self._current_bet_2 = bet
+        self._deck = Deck(self._deck_count)
+        self.deck.shuffle()
+        self.deal()
     
 class Player:
     """
@@ -253,8 +281,7 @@ class Player:
     def __init__(self, game: Game, name: str, money: int):
         self._game = game
         self._name = name
-        self._money = 0
-        self._current_bet = 0
+        self._money = money
         self._hand = None
 
     @property
