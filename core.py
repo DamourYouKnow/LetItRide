@@ -129,6 +129,10 @@ class Hand:
     def __len__(self):
         return len(self._cards)
 
+    def __iter__(self):
+        for card in self._cards:
+            yield card
+
     @property
     def payout(self) -> int:
         if self.type in Hand.main_payouts:

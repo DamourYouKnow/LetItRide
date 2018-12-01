@@ -43,13 +43,9 @@ class GameScreen(Screen):
     def action(self, pull=False):
         if (self._stage == 0):
             self.game.bet(1)
-            self._cards = [
-                CardComponent(700, 50, self.game.player.hand.playerCards()[0], False),
-                CardComponent(700, 50, self.game.player.hand.playerCards()[1], False),
-                CardComponent(700, 50, self.game.player.hand.playerCards()[2], False),
-                CardComponent(700, 50, self.game.player.hand.firstBet(), False),
-                CardComponent(700, 50, self.game.player.hand.secondBet(), False),
-            ]
+
+            self._cards = [CardComponent(700, 50, c, False) for c in self.game.player.hand]
+
             self._cards[0].deal(100, 300)
             self._cards[1].deal(200, 300)
             self._cards[2].deal(300, 300)
