@@ -229,9 +229,9 @@ class Game:
     """
     Class representing a blackjack game.
     """
-    def __init__(self, decks: int = 2, name: str="Player", money: int = 1000):
+    def __init__(self, decks: int = 1, name: str="Player", money: int = 1000):
         self._deck_count = decks
-        self._deck = Deck(2)
+        self._deck = Deck(decks)
         self._player = Player(self, name, money)
         self._current_bet_0 = 0
         self._current_bet_1 = 0
