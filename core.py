@@ -71,9 +71,6 @@ class Card:
     def suite(self):
         return self._suite
 
-    def __str__(self):
-        return str(self.rank) + str(self.suite)
-
     @property
     def filename(self):
         return "./assets/" + str(self.rank) + str(self.suite) + ".png"
