@@ -104,7 +104,7 @@ class Hand:
     """
     Class representing the hand of a player or banker.
     """
-    main_payouts = {
+    payouts = {
         HandType.royal_flush: 1000,
         HandType.straight_flush: 200,
         HandType.four_of_kind: 50,
@@ -130,20 +130,10 @@ class Hand:
         for card in self._cards:
             yield card
 
-    @property
-    def payout(self) -> int:
-        if self.type in Hand.main_payouts:
-            return Hand.main_payouts[self.type]
+    def payout(self, bet: int) -> int:
+        if self.type in Hand.payouts:
+            return Hand.payouts[self.type] * bet
         return 0
-
-    def playerCards(self) -> List[Card]:
-        return self.cards[0:3]
-
-    def firstBet(self) -> Card:
-        return self.cards[3]
-    
-    def secondBet(self) -> Card:
-        return self.cards[4]
 
     @property
     def type(self) -> HandType:
@@ -202,12 +192,6 @@ class Deck:
     def draw(self) -> Card:
         return self._cards.pop()
 
-    def drawHand(self, num: int = 5) -> Card:
-        hand = []
-        for i in range(0,num):
-            hand.append(self.draw())
-        return hand
-
     def shuffle(self):
         random.shuffle(self._cards)
 
@@ -217,12 +201,10 @@ class Deck:
     @staticmethod
     def _create_deck(count: int=1) -> List[Card]:
         deck = []
+        suites = [Suite.clubs, Suite.diamonds, Suite.hearts, Suite.spades]
         for _ in range(0, count):
             for i in range(1, 14):
-                deck.append(Card(i, Suite.clubs))
-                deck.append(Card(i, Suite.diamonds))
-                deck.append(Card(i, Suite.hearts))
-                deck.append(Card(i, Suite.spades))
+                deck += [Card(i, s) for s in suites]
         return deck
 
 
@@ -234,9 +216,6 @@ class Game:
         self._deck_count = decks
         self._deck = Deck(decks)
         self._player = Player(self, name, money)
-        self._current_bet_0 = 0
-        self._current_bet_1 = 0
-        self._current_bet_2 = 0
         self.deck.shuffle()
 
     @property
@@ -248,32 +227,10 @@ class Game:
         return self._player
     
     def deal(self):
-        self.player.setHand(Hand(self.deck.drawHand()))
+        self._deck = Deck(self._deck_count) # We may want to change this logic.
+        self._deck.shuffle()
+        self.player.hand = Hand([self._deck.draw() for _ in range(5)])
 
-    def payout(self) -> int:
-        payout = (self.player.hand.payout+1)*(self._current_bet_0 + self._current_bet_1 + self._current_bet_2) if self.player.hand.payout != 0 else 0
-        self.player._money = self.player.money + payout
-        return payout
-
-
-    def firstBet(self, pull: bool):
-        if (pull):
-            self.player._money = self.player.money + self._current_bet_1
-            self._current_bet_1 = 0
-    
-    def secondBet(self, pull: bool):
-        if (pull):
-            self.player._money = self.player.money + self._current_bet_2
-            self._current_bet_2 = 0
-
-    def bet(self, bet: int):
-        self.player._money = self.player._money - 3*bet
-        self._current_bet_0 = bet
-        self._current_bet_1 = bet
-        self._current_bet_2 = bet
-        self._deck = Deck(self._deck_count)
-        self.deck.shuffle()
-        self.deal()
     
 class Player:
     """
@@ -283,6 +240,8 @@ class Player:
         self._game = game
         self._name = name
         self._money = money
+        self._full_bet = 0
+        self._portion_bet = 0
         self._hand = None
 
     @property
@@ -293,14 +252,40 @@ class Player:
     def money(self) -> int:
         return self._money
 
+    @money.setter
+    def money(self, value: int):
+        self._money = value
+
+    @property
+    def full_bet(self) -> int:
+        return self._full_bet
+
+    @property
+    def portion_bet(self) -> int:
+        return self._portion_bet
+
     @property
     def hand(self) -> Hand:
         return self._hand
 
-    def setHand(self, hand):
-        self._hand = hand
+    @hand.setter
+    def hand(self, value: Hand):
+        self._hand = value
 
     def draw(self, count: int=1):
         for _ in range(0, count):
             self._hand.cards.append(self._game.deck.draw())
+
+    def bet(self, bet: int):
+        self._money -= bet * 3
+        self._full_bet = bet * 3
+        self._portion_bet = bet
+
+    def pull(self):
+        if self._full_bet <= self._portion_bet:
+            raise Exception("Cannot full 1st bet")
+        self._full_bet -= self._portion_bet
+
+    def payout(self):
+        self._money += self._hand.payout(self._full_bet)
 

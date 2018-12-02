@@ -36,7 +36,7 @@ class GameScreen(Screen):
         self._background = pygame.image.load("./assets/felt.png")
         self._stage = 0
         self._bankroll = Button(100, 500, height=50, text="Bankroll: ", color=Color(255,255,255,1), downColor=Color(255,255,255,1), padding=5, borderColor=Color(0,0,0,1))
-        payoffTexts = ["%s: %d" % (str(x), Hand.main_payouts[x] if x in Hand.main_payouts else 0) for x in HandType if x != HandType.high and x != HandType.pair]
+        payoffTexts = ["%s: %d" % (str(x), Hand.payouts[x] if x in Hand.payouts else 0) for x in HandType if x != HandType.high and x != HandType.pair]
         self._display = [Button(900, 50+30*i, width=200, height=30, text=x, color=Color(255,255,255,1), borderColor=None) for i, x in enumerate(payoffTexts)]
         self._deck = CardComponent(700, 50, Card(1, Suite.clubs), False)
         self._bet_labels = [Button(210, 400, "$", width=80, height=30, color=Color(199,199,199,1), borderColor=None),
@@ -48,7 +48,7 @@ class GameScreen(Screen):
 
     def action(self, pull=False):
         if (self._stage == 0):
-            self.game.bet(1)
+            self._game.player.bet(1)
             for bet in self._bets:
                 bet.setText("$" + str(1))
             self._cards = [CardComponent(700, 50, c, False) for c in self.game.player.hand]
@@ -67,25 +67,26 @@ class GameScreen(Screen):
             self._winning = None
         elif (self._stage == 1):
             self._stage = 2
-            self._cards[3].flip()
-            self.game.firstBet(pull)
+            self._cards[3].flip()    
             if (pull):
+                self._game.player.pull()
                 self._bets[2].setText("")
             self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 2", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
                 action=(lambda: self.action(True)))
         elif (self._stage == 2):
             self._stage = 0
-            self.game.secondBet(pull)
             if (pull):
+                self._game.player.pull()
                 self._bets[1].setText("")
             self._cards[4].flip()
             self._pull = Button(500, 500, width=128, height=50, text="Clear Bet", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
                 action=(lambda: self.clear()))
-            payout = self.game.payout()
+            payout = self._game.player.hand.payout(self._game.player.full_bet)
             winText = str(self.game.player.hand.type) + " - Win $" + str(payout)
             self._winning = Button(250, 25, width=228, height=50, text=winText, color=Color(255,255,255,1), 
                     downColor=Color(255,255,255,1), padding=5, borderColor=Color(0,0,0,1))
             self._action._text = "Repeat Bet"
+            self._game.deal()
 
     def clear(self):
         if (self._stage == 0):
