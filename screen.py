@@ -48,6 +48,7 @@ class GameScreen(Screen):
 
     def action(self, pull=False):
         if (self._stage == 0):
+            self._game.deal()
             self._game.player.bet(1)
             for bet in self._bets:
                 bet.setText("$" + str(1))
@@ -86,7 +87,6 @@ class GameScreen(Screen):
             self._winning = Button(250, 25, width=228, height=50, text=winText, color=Color(255,255,255,1), 
                     downColor=Color(255,255,255,1), padding=5, borderColor=Color(0,0,0,1))
             self._action._text = "Repeat Bet"
-            self._game.deal()
 
     def clear(self):
         if (self._stage == 0):
