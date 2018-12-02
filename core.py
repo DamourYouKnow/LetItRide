@@ -1,6 +1,7 @@
 import random
 from enum import Enum
 from typing import List
+import itertools
     
 class Suite(Enum):
     """
@@ -289,3 +290,52 @@ class Player:
     def payout(self):
         self._money += self._hand.payout(self._full_bet)
 
+class Statistics:
+
+    def shouldRide(cards):
+        return Statistics.expectedValue(cards) >= 0
+
+    def expectedValue(cards):
+        choose = 5-len(cards)
+        results = Statistics.probabilityDistribution(cards)
+        possibilities = Statistics.choose(52-5+choose, choose)
+        ev = 0
+        for k,v in results.items():
+            print(str(k) + str(v))
+            if k in Hand.payouts:
+                ev += Hand.payouts[k] * v/possibilities
+            else:
+                ev -= v/possibilities
+        return ev
+
+    def probabilityDistribution(cards):
+        choose = 5-len(cards)
+        results = dict()
+        for t in HandType:
+            results[t] = 0
+        if (choose <= 0):
+            print(cards)
+            for c in cards:
+                print (str (c))
+            print(Hand(cards).type)
+            results[Hand(cards).type] = 1
+            return results
+        deck = Deck(1).cards
+        for card in cards:
+            deck.remove(card)
+        for n in itertools.combinations(deck, choose):
+            hand = Hand(cards + list(n))
+            results[hand.type] += 1
+        return results
+
+    def choose(n,k):
+        if k<0 or n<k:
+            return 0
+        nk = 1
+        kk = 1
+        for i in range(1, min(n-k, k) + 1):
+            nk = nk*n
+            kk = kk*i
+            n = n - 1
+        return nk//kk
+            
