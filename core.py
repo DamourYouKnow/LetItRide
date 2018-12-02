@@ -133,7 +133,8 @@ class Hand:
 
     def payout(self, bet: int) -> int:
         if self.type in Hand.payouts:
-            return (Hand.payouts[self.type]+1) * bet # +1 for returning initial bet
+            # +1 for returning initial bet
+            return (Hand.payouts[self.type]+1) * bet
         return 0
 
     @property

@@ -180,7 +180,11 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(Statistics.shouldRide(hand), False)
     
     def test_expected_ride(self):
-        hand = [Card(11, Suit.clubs), Card(11, Suit.spades), Card(12, Suit.clubs)]
+        hand = [
+            Card(11, Suit.clubs), 
+            Card(11, Suit.spades), 
+            Card(12, Suit.clubs)
+        ]
         self.assertEqual(Statistics.shouldRide(hand), True)
 
 if __name__ == '__main__':
