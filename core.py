@@ -302,7 +302,6 @@ class Statistics:
         possibilities = Statistics.choose(52-5+choose, choose)
         ev = 0
         for k,v in results.items():
-            print(str(k) + str(v))
             if k in Hand.payouts:
                 ev += Hand.payouts[k] * v/possibilities
             else:
@@ -315,10 +314,6 @@ class Statistics:
         for t in HandType:
             results[t] = 0
         if (choose <= 0):
-            print(cards)
-            for c in cards:
-                print (str (c))
-            print(Hand(cards).type)
             results[Hand(cards).type] = 1
             return results
         deck = Deck(1).cards
