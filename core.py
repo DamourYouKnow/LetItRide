@@ -286,6 +286,7 @@ class Player:
         if self._full_bet <= self._portion_bet:
             raise Exception("Cannot full 1st bet")
         self._full_bet -= self._portion_bet
+        self._money += self._portion_bet
 
     def payout(self):
         self._money += self._hand.payout(self._full_bet)
