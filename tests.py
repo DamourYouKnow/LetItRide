@@ -152,7 +152,7 @@ class TestMethods(unittest.TestCase):
             Card(2, Suit.clubs),
             Card(3, Suit.clubs)
         ]
-        self.assertEqual(Hand(cards).payout(1), 3)
+        self.assertEqual(Hand(cards).payout(1), 3 + 1)
 
     def test_card_str(self):
         self.assertEqual(str(Card(1, Suit.clubs)), "AC")
