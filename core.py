@@ -1,10 +1,11 @@
 import random
 from enum import Enum
 from typing import List
+import itertools
     
-class Suite(Enum):
+class Suit(Enum):
     """
-    Enum describing all possible card suites.
+    Enum describing all possible card Suits.
     """
     diamonds = 1
     clubs = 2
@@ -13,10 +14,10 @@ class Suite(Enum):
 
     def __str__(self) -> str:
         strings = {
-            Suite.diamonds: "D",
-            Suite.clubs: "C",
-            Suite.hearts: "H",
-            Suite.spades: "S"
+            Suit.diamonds: "D",
+            Suit.clubs: "C",
+            Suit.hearts: "H",
+            Suit.spades: "S"
 
         }
         return strings[self]
@@ -59,24 +60,24 @@ class Card:
     """
     Class representing a playing card.
     """
-    def __init__(self, rank: int, suite: Suite):
+    def __init__(self, rank: int, Suit: Suit):
         self._rank = rank
-        self._suite = suite
+        self._Suit = Suit
 
     @property
     def rank(self):
         return self._rank
 
     @property
-    def suite(self):
-        return self._suite
+    def Suit(self):
+        return self._Suit
 
     @property
     def filename(self):
-        return "./assets/" + str(self.rank) + str(self.suite) + ".png"
+        return "./assets/" + str(self.rank) + str(self.Suit) + ".png"
 
     def __eq__(self, other: 'Card') -> bool:
-        return self.rank == other.rank and self.suite == other.suite
+        return self.rank == other.rank and self.Suit == other.Suit
 
     def __ne__(self, other: 'Card') -> bool:
         return not self == other
@@ -97,7 +98,7 @@ class Card:
         rank_str = str(self._rank)
         if self._rank == 1 or self._rank >= 11:
             rank_str = {1: 'A', 11: 'J', 12: 'Q', 13: 'K'}[self._rank]
-        return rank_str + str(self._suite)
+        return rank_str + str(self._Suit)
 
 
 class Hand:
@@ -132,7 +133,7 @@ class Hand:
 
     def payout(self, bet: int) -> int:
         if self.type in Hand.payouts:
-            return Hand.payouts[self.type] * bet
+            return (Hand.payouts[self.type]+1) * bet # +1 for returning initial bet
         return 0
 
     @property
@@ -145,7 +146,7 @@ class Hand:
         ranks = [card.rank for card in hand]
         is_royal = all([r in ranks for r in royals])
         is_straight = ranks == list(range(ranks[0], ranks[-1] + 1)) or is_royal
-        is_flush = len([c for c in hand if c.suite == hand[0].suite]) == size
+        is_flush = len([c for c in hand if c.Suit == hand[0].Suit]) == size
 
         if is_royal and is_flush:
             return HandType.royal_flush
@@ -201,10 +202,10 @@ class Deck:
     @staticmethod
     def _create_deck(count: int=1) -> List[Card]:
         deck = []
-        suites = [Suite.clubs, Suite.diamonds, Suite.hearts, Suite.spades]
+        Suits = [Suit.clubs, Suit.diamonds, Suit.hearts, Suit.spades]
         for _ in range(0, count):
             for i in range(1, 14):
-                deck += [Card(i, s) for s in suites]
+                deck += [Card(i, s) for s in Suits]
         return deck
 
 
@@ -285,7 +286,52 @@ class Player:
         if self._full_bet <= self._portion_bet:
             raise Exception("Cannot full 1st bet")
         self._full_bet -= self._portion_bet
+        self._money += self._portion_bet
 
     def payout(self):
         self._money += self._hand.payout(self._full_bet)
 
+class Statistics:
+
+    def shouldRide(cards):
+        return Statistics.expectedValue(cards) >= 0
+
+    def expectedValue(cards):
+        choose = 5-len(cards)
+        results = Statistics.probabilityDistribution(cards)
+        possibilities = Statistics.choose(52-5+choose, choose)
+        ev = 0
+        for k,v in results.items():
+            if k in Hand.payouts:
+                ev += Hand.payouts[k] * v/possibilities
+            else:
+                ev -= v/possibilities
+        return ev
+
+    def probabilityDistribution(cards):
+        choose = 5-len(cards)
+        results = dict()
+        for t in HandType:
+            results[t] = 0
+        if (choose <= 0):
+            results[Hand(cards).type] = 1
+            return results
+        deck = Deck(1).cards
+        for card in cards:
+            deck.remove(card)
+        for n in itertools.combinations(deck, choose):
+            hand = Hand(cards + list(n))
+            results[hand.type] += 1
+        return results
+
+    def choose(n,k):
+        if k<0 or n<k:
+            return 0
+        nk = 1
+        kk = 1
+        for i in range(1, min(n-k, k) + 1):
+            nk = nk*n
+            kk = kk*i
+            n = n - 1
+        return nk//kk
+            
