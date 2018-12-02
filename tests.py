@@ -1,5 +1,5 @@
 import unittest
-from core import Deck, Card, Hand, Suite, Game, Player, HandType, Statistics
+from core import Deck, Card, Hand, Suit, Game, Player, HandType, Statistics
 
 class TestMethods(unittest.TestCase):
     def test_create_deck(self):
@@ -18,149 +18,149 @@ class TestMethods(unittest.TestCase):
 
     def test_royal_flush(self):
         cards = [
-            Card(1, Suite.clubs),
-            Card(10, Suite.clubs),
-            Card(11, Suite.clubs),
-            Card(12, Suite.clubs),
-            Card(13, Suite.clubs)
+            Card(1, Suit.clubs),
+            Card(10, Suit.clubs),
+            Card(11, Suit.clubs),
+            Card(12, Suit.clubs),
+            Card(13, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.royal_flush)
 
     def test_straight_flush(self):
         cards = [
-            Card(4, Suite.clubs),
-            Card(5, Suite.clubs),
-            Card(6, Suite.clubs),
-            Card(7, Suite.clubs),
-            Card(8, Suite.clubs)
+            Card(4, Suit.clubs),
+            Card(5, Suit.clubs),
+            Card(6, Suit.clubs),
+            Card(7, Suit.clubs),
+            Card(8, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.straight_flush)
 
     def test_four_of_kind(self):
         cards = [
-            Card(4, Suite.clubs),
-            Card(4, Suite.hearts),
-            Card(4, Suite.diamonds),
-            Card(4, Suite.spades),
-            Card(8, Suite.clubs)
+            Card(4, Suit.clubs),
+            Card(4, Suit.hearts),
+            Card(4, Suit.diamonds),
+            Card(4, Suit.spades),
+            Card(8, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.four_of_kind)
 
     def test_full_house(self):
         cards = [
-            Card(4, Suite.clubs),
-            Card(4, Suite.hearts),
-            Card(4, Suite.diamonds),
-            Card(8, Suite.spades),
-            Card(8, Suite.clubs)
+            Card(4, Suit.clubs),
+            Card(4, Suit.hearts),
+            Card(4, Suit.diamonds),
+            Card(8, Suit.spades),
+            Card(8, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.full_house)
 
     def test_flush(self):
         cards = [
-            Card(2, Suite.clubs),
-            Card(4, Suite.clubs),
-            Card(6, Suite.clubs),
-            Card(8, Suite.clubs),
-            Card(10, Suite.clubs)
+            Card(2, Suit.clubs),
+            Card(4, Suit.clubs),
+            Card(6, Suit.clubs),
+            Card(8, Suit.clubs),
+            Card(10, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.flush)
 
     def test_straight(self):
         cards = [
-            Card(1, Suite.hearts),
-            Card(2, Suite.clubs),
-            Card(3, Suite.clubs),
-            Card(4, Suite.clubs),
-            Card(5, Suite.clubs)
+            Card(1, Suit.hearts),
+            Card(2, Suit.clubs),
+            Card(3, Suit.clubs),
+            Card(4, Suit.clubs),
+            Card(5, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.straight)
 
         cards = [
-            Card(1, Suite.hearts),
-            Card(10, Suite.clubs),
-            Card(11, Suite.clubs),
-            Card(12, Suite.clubs),
-            Card(13, Suite.clubs)
+            Card(1, Suit.hearts),
+            Card(10, Suit.clubs),
+            Card(11, Suit.clubs),
+            Card(12, Suit.clubs),
+            Card(13, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.straight)
 
     def test_three_of_kind(self):
         cards = [
-            Card(1, Suite.hearts),
-            Card(1, Suite.clubs),
-            Card(1, Suite.diamonds),
-            Card(2, Suite.clubs),
-            Card(3, Suite.clubs)
+            Card(1, Suit.hearts),
+            Card(1, Suit.clubs),
+            Card(1, Suit.diamonds),
+            Card(2, Suit.clubs),
+            Card(3, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.three_of_kind)
 
     def test_two_pair(self):
         cards = [
-            Card(1, Suite.hearts),
-            Card(1, Suite.clubs),
-            Card(2, Suite.diamonds),
-            Card(2, Suite.clubs),
-            Card(3, Suite.clubs)
+            Card(1, Suit.hearts),
+            Card(1, Suit.clubs),
+            Card(2, Suit.diamonds),
+            Card(2, Suit.clubs),
+            Card(3, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.two_pair)
 
     def test_high_pair(self):
         cards = [
-            Card(1, Suite.hearts),
-            Card(1, Suite.clubs),
-            Card(2, Suite.diamonds),
-            Card(3, Suite.clubs),
-            Card(4, Suite.clubs)
+            Card(1, Suit.hearts),
+            Card(1, Suit.clubs),
+            Card(2, Suit.diamonds),
+            Card(3, Suit.clubs),
+            Card(4, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.high_pair)
 
     def test_pair(self):
         cards = [
-            Card(1, Suite.hearts),
-            Card(2, Suite.clubs),
-            Card(2, Suite.diamonds),
-            Card(3, Suite.clubs),
-            Card(4, Suite.clubs)
+            Card(1, Suit.hearts),
+            Card(2, Suit.clubs),
+            Card(2, Suit.diamonds),
+            Card(3, Suit.clubs),
+            Card(4, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.pair)
 
     def test_high(self):
         cards = [
-            Card(3, Suite.hearts),
-            Card(5, Suite.clubs),
-            Card(6, Suite.diamonds),
-            Card(7, Suite.clubs),
-            Card(8, Suite.clubs)
+            Card(3, Suit.hearts),
+            Card(5, Suit.clubs),
+            Card(6, Suit.diamonds),
+            Card(7, Suit.clubs),
+            Card(8, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.high)
 
     def test_payout(self):
         cards = [
-            Card(3, Suite.hearts),
-            Card(5, Suite.clubs),
-            Card(6, Suite.diamonds),
-            Card(7, Suite.clubs),
-            Card(8, Suite.clubs)
+            Card(3, Suit.hearts),
+            Card(5, Suit.clubs),
+            Card(6, Suit.diamonds),
+            Card(7, Suit.clubs),
+            Card(8, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).payout(1), 0)
 
         cards = [
-            Card(1, Suite.hearts),
-            Card(1, Suite.clubs),
-            Card(1, Suite.diamonds),
-            Card(2, Suite.clubs),
-            Card(3, Suite.clubs)
+            Card(1, Suit.hearts),
+            Card(1, Suit.clubs),
+            Card(1, Suit.diamonds),
+            Card(2, Suit.clubs),
+            Card(3, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).payout(1), 3)
 
     def test_card_str(self):
-        self.assertEqual(str(Card(1, Suite.clubs)), "AC")
-        self.assertEqual(str(Card(2, Suite.diamonds)), "2D")
-        self.assertEqual(str(Card(11, Suite.hearts)), "JH")
+        self.assertEqual(str(Card(1, Suit.clubs)), "AC")
+        self.assertEqual(str(Card(2, Suit.diamonds)), "2D")
+        self.assertEqual(str(Card(11, Suit.hearts)), "JH")
         
     def test_expected_val(self):
-        hand = [Card(3, Suite.clubs), Card(3, Suite.spades), Card(10, Suite.clubs)]
+        hand = [Card(3, Suit.clubs), Card(3, Suit.spades), Card(10, Suit.clubs)]
         probabilityDistribution = Statistics.probabilityDistribution(hand)
         expectedDistribution = dict()
         expectedDistribution[HandType.pair] = 880
@@ -176,11 +176,11 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(sum(probabilityDistribution.values()), 1176)
 
     def test_expected_pull(self):
-        hand = [Card(3, Suite.clubs), Card(3, Suite.spades), Card(10, Suite.clubs)]
+        hand = [Card(3, Suit.clubs), Card(3, Suit.spades), Card(10, Suit.clubs)]
         self.assertEqual(Statistics.shouldRide(hand), False)
     
     def test_expected_ride(self):
-        hand = [Card(11, Suite.clubs), Card(11, Suite.spades), Card(12, Suite.clubs)]
+        hand = [Card(11, Suit.clubs), Card(11, Suit.spades), Card(12, Suit.clubs)]
         self.assertEqual(Statistics.shouldRide(hand), True)
 
 if __name__ == '__main__':

@@ -39,7 +39,7 @@ class GameScreen(Screen):
         self._bankroll = Button(100, 500, height=50, text="Bankroll: ", color=Color(255,255,255,1), downColor=Color(255,255,255,1), padding=5, borderColor=Color(0,0,0,1))
         payoffTexts = ["%s: %d" % (str(x), Hand.payouts[x] if x in Hand.payouts else 0) for x in HandType if x != HandType.high and x != HandType.pair]
         self._display = [Button(900, 50+30*i, width=200, height=30, text=x, color=Color(255,255,255,1), borderColor=None) for i, x in enumerate(payoffTexts)]
-        self._deck = CardObject(700, 50, Card(1, Suite.clubs), False)
+        self._deck = CardObject(700, 50, Card(1, Suit.clubs), False)
         self._bet_labels = [Button(210, 400, "$", width=80, height=30, color=Color(199,199,199,1), borderColor=None),
             Button(310, 400, "2", width=80, height=30, color=Color(199,199,199,1), borderColor=None),
             Button(410, 400, "1", width=80, height=30, color=Color(199,199,199,1), borderColor=None)]
