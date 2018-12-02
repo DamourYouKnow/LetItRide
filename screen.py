@@ -51,7 +51,7 @@ class GameScreen(Screen):
         if (self._stage == 0):
             self._game.player.bet(1)
             for bet in self._bets:
-                bet.setText("$" + str(1))
+                bet.text = "$" + str(1)
             self._cards = [CardObject(700, 50, c, False) for c in self.game.player.hand]
             self._cards[0].deal(100, 200)
             self._cards[1].deal(200, 200)
@@ -71,14 +71,14 @@ class GameScreen(Screen):
             self._cards[3].flip()    
             if (pull):
                 self._game.player.pull()
-                self._bets[2].setText("")
+                self._bets[2].text = ""
             self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 2", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
                 action=(lambda: self.action(True)))
         elif (self._stage == 2):
             self._stage = 0
             if (pull):
                 self._game.player.pull()
-                self._bets[1].setText("")
+                self._bets[1].text = ""
             self._cards[4].flip()
             self._pull = Button(500, 500, width=128, height=50, text="Clear Bet", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
                 action=(lambda: self.clear()))
@@ -96,7 +96,7 @@ class GameScreen(Screen):
             self._cards = []
             self._winning = None
             for bet in self._bets:
-                bet.setText(None)
+                bet.text = None
 
     @property
     def game(self) -> Game:
@@ -112,7 +112,7 @@ class GameScreen(Screen):
             self._pull.handle_click(event)
 
     def update(self):
-        self._bankroll.setText("Bankroll: " + str(self.game.player.money))
+        self._bankroll.text = "Bankroll: " + str(self.game.player.money)
 
     def draw(self, canvas: Surface):
         canvas.fill(Color(255, 255, 255, 1))
@@ -142,9 +142,9 @@ class MainMenu(Screen):
     def __init__(self):
         self._next_screen = self
         self._buttons = [
-            Button(20, 20, "Hello!", Color(0,128,100,1), fontSize=30, action=self._to_game)
+            Button(20, 20, "Hello!", Color(0,128,100,1), action=self._to_game)
         ]
-        self._labels = [Label(50, 50, "Let It Ride Poker", fontSize = 50)]
+        self._labels = [Label(50, 50, "Let It Ride Poker", font_size = 50)]
 
     def _to_game(self):
         self._next_screen = GameScreen()
@@ -180,7 +180,6 @@ class GameObject(ABC):
         self._y = y
         self._width = width
         self._height = height
-        self._rect = Rect(x, y, width, height)
 
     @property
     def x(self) -> int:
@@ -197,7 +196,6 @@ class GameObject(ABC):
     @pos.setter
     def pos(self, value: Tuple[int, int]):
         self._x, self._y = value
-        self._rect = Rect(value[0], value[1], self._width, self._height)
 
     @property
     def width(self) -> int:
@@ -208,8 +206,16 @@ class GameObject(ABC):
         return self._height
 
     @property
+    def size(self) -> Tuple[int, int]:
+        return (self._width, self._height)
+
+    @size.setter
+    def size(self, value: Tuple[int, int]):
+        self._width, self._height = value
+
+    @property
     def rect(self) -> Rect:
-        return self._rect
+        return Rect(self._x, self._y, self._width, self._height)
 
     def move(self, x: int, y: int):
         self.pos = (x, y)
@@ -223,16 +229,21 @@ class Label(GameObject):
     def __init__(
             self, x: int, y: int, text: str, 
             color: Color=Color(0,0,0,1), 
-            fontSize: int=20, fontName: str="Times"):
-
-        GameObject.__init__(self, x, y, 0, 0) # TODO: Find way to get label height.
+            font_size: int=20, font_name: str="Times"):
         self._text = text
         self._color = color
-        self._font = pygame.font.SysFont(fontName, fontSize)
+        self._font = pygame.font.SysFont(font_name, font_size)    
+        w, h = self.font.render(self.text, False, (0,0,0)).get_rect().size
+        GameObject.__init__(self, x, y, w, h)
     
     @property
     def text(self) -> string:
         return self._text
+
+    @text.setter
+    def text(self, value: str):
+        self._text = value
+        self.size = self.font.render(self.text, False, (0,0,0)).get_rect().size
 
     @property
     def color(self) -> Color:
@@ -331,9 +342,8 @@ class CardObject(GameObject):
 
 
 class Button(GameObject):
-    def __init__(self, x: int, y: int, text: string, color: Color, downColor: Color = Color(0,0,0,1), fontColor: Color = Color(0,0,0,1),
-                 borderWidth: int = 2, borderColor: Color = Color(0,0,0,1), 
-                 fontSize: int = 20, fontName: string = "Times", padding: int = 4, 
+    def __init__(self, x: int, y: int, text: str, color: Color, downColor: Color = Color(0,0,0,1),
+                 borderWidth: int = 2, borderColor: Color = Color(0,0,0,1), padding: int = 4, 
                  width: int=(-1), height: int=(-1), action=None):
         GameObject.__init__(self, x, y, width, height)
         self._defaultWidth = width
@@ -342,34 +352,24 @@ class Button(GameObject):
         self._color = color
         self._borderColor = borderColor
         self._borderWidth = borderWidth if self.borderColor != None else 0
-        self._fontName = fontName
-        self._fontSize = fontSize
-        self._font = pygame.font.SysFont(fontName, fontSize)
-        self._fontColor = fontColor
         self._action = action
         self._downColor = downColor
         self._down = False
-        self.setText(text)
+        self._label = Label(x + padding, y + padding, text)
+        self._adjust_label()
     
-    def setText(self, text: str):
-        self._text = text
-        if self._defaultHeight < 0:
-            self._height = self._fontSize + 2 * self.padding
-        else:
-            self._height = self._defaultHeight
-        if self._defaultWidth < 0:
-            self._width = self.font.render(self.text, False, (0,0,0)).get_width() + 2 * self.padding
-        else:
-            self._width = self._defaultWidth
-        self._rect = Rect(self.x, self.y, self.width, self.height)
+    @property
+    def text(self) -> string:
+        return self._label.text
+
+    @text.setter
+    def text(self, value: str):
+        self._label.text = value
+        self._adjust_label()
 
     @property
     def padding(self) -> int:
         return self._padding
-
-    @property
-    def text(self) -> string:
-        return self._text
 
     @property
     def color(self) -> Color:
@@ -382,11 +382,7 @@ class Button(GameObject):
     @property
     def borderColor(self) -> Color:
         return self._borderColor
-
-    @property
-    def font(self) -> Font:
-        return self._font
-    
+ 
     @property
     def action(self):
         return self._action
@@ -409,15 +405,7 @@ class Button(GameObject):
                      self.y,
                      self.width,
                      self.height))
-        if (self._fontColor != None):
-            textSurface = self.font.render(self.text, False, self._fontColor)
-            paddingX = self.padding
-            paddingY = self.padding
-            if (textSurface.get_width() < self.width-2*self.padding):
-                paddingX = (self.width-textSurface.get_width())/2
-            if (textSurface.get_height() < self.height-2*self.padding):
-                paddingY = (self.height-textSurface.get_height())/2
-            canvas.blit(textSurface, (self.x + paddingX, self.y + paddingY))
+        self._label.draw(canvas)
     
     def handle_click(self, event: Event):
         self._down = False
@@ -426,3 +414,17 @@ class Button(GameObject):
                 self._action()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self._down = True
+
+    def _adjust_label(self):
+        self._width = max(
+                self._defaultWidth, self._label.width + 2 * self._padding)
+        self._height = max(
+                self._defaultHeight, self._label.height + 2 * self._padding)
+        
+        padding_x, padding_y = self._padding, self._padding
+        if self._label.width < self._width * self._padding:
+            padding_x = (self._width - self._label.width) / 2
+        if self._label.height < self._height * self._height:
+            padding_y = (self._height - self._label.height) / 2
+        self._label.pos = (self._x + padding_x, self._y + padding_y)
+
