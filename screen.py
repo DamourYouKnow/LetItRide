@@ -54,14 +54,14 @@ class GameScreen(Screen):
             for bet in self._bets:
                 bet.text = "$" + str(1)
             self._cards = [CardObject(700, 50, c, False) for c in self.game.player.hand]
-            self._cards[0].deal(100, 200)
-            self._cards[1].deal(200, 200)
-            self._cards[2].deal(300, 200)
-            self._cards[3].deal(400, 200)
-            self._cards[4].deal(500, 200)
-            self._cards[0].flip()
-            self._cards[1].flip()
-            self._cards[2].flip()
+
+            x = 100
+            for card in self._cards:
+                card.deal(x, 200)
+                x += 100
+
+            [self._cards[i].flip() for i in range(3)]
+
             self._stage = 1
             self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 1", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
             action=(lambda: self.action(True)))
