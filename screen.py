@@ -5,6 +5,7 @@ from pygame.font import Font
 import pygame
 import string
 from core import *
+from typing import Tuple
 
 class Screen(ABC):
 
@@ -38,7 +39,7 @@ class GameScreen(Screen):
         self._bankroll = Button(100, 500, height=50, text="Bankroll: ", color=Color(255,255,255,1), downColor=Color(255,255,255,1), padding=5, borderColor=Color(0,0,0,1))
         payoffTexts = ["%s: %d" % (str(x), Hand.payouts[x] if x in Hand.payouts else 0) for x in HandType if x != HandType.high and x != HandType.pair]
         self._display = [Button(900, 50+30*i, width=200, height=30, text=x, color=Color(255,255,255,1), borderColor=None) for i, x in enumerate(payoffTexts)]
-        self._deck = CardComponent(700, 50, Card(1, Suite.clubs), False)
+        self._deck = CardObject(700, 50, Card(1, Suite.clubs), False)
         self._bet_labels = [Button(210, 400, "$", width=80, height=30, color=Color(199,199,199,1), borderColor=None),
             Button(310, 400, "2", width=80, height=30, color=Color(199,199,199,1), borderColor=None),
             Button(410, 400, "1", width=80, height=30, color=Color(199,199,199,1), borderColor=None)]
@@ -51,7 +52,7 @@ class GameScreen(Screen):
             self._game.player.bet(1)
             for bet in self._bets:
                 bet.setText("$" + str(1))
-            self._cards = [CardComponent(700, 50, c, False) for c in self.game.player.hand]
+            self._cards = [CardObject(700, 50, c, False) for c in self.game.player.hand]
             self._cards[0].deal(100, 200)
             self._cards[1].deal(200, 200)
             self._cards[2].deal(300, 200)
@@ -106,9 +107,9 @@ class GameScreen(Screen):
         return self._cards
 
     def handle(self, event: Event):
-        self._action.handleClick(event)
+        self._action.handle_click(event)
         if (self._pull != None):
-            self._pull.handleClick(event)
+            self._pull.handle_click(event)
 
     def update(self):
         self._bankroll.setText("Bankroll: " + str(self.game.player.money))
@@ -157,7 +158,7 @@ class MainMenu(Screen):
 
     def handle(self, event: Event):
         for button in self.buttons:
-            button.handleClick(event)
+            button.handle_click(event)
 
     def update(self):
         pass
@@ -172,15 +173,15 @@ class MainMenu(Screen):
     def next(self):
         return self._next_screen
 
-class Label:
-    def __init__(self, x: int, y: int, text: string, color: Color = Color(0,0,0,1), fontSize: int = 20,
-        fontName: string = "Times"):
+
+class GameObject(ABC):
+    def __init__(self, x: int, y: int, width: int, height: int):
         self._x = x
         self._y = y
-        self._text = text
-        self._color = color
-        self._font = pygame.font.SysFont(fontName, fontSize)
-    
+        self._width = width
+        self._height = height
+        self._rect = Rect(x, y, width, height)
+
     @property
     def x(self) -> int:
         return self._x
@@ -189,6 +190,46 @@ class Label:
     def y(self) -> int:
         return self._y
 
+    @property
+    def pos(self) -> Tuple[int, int]:
+        return (self._x, self._y)
+
+    @pos.setter
+    def pos(self, value: Tuple[int, int]):
+        self._x, self._y = value
+        self._rect = Rect(value[0], value[1], self._width, self._height)
+
+    @property
+    def width(self) -> int:
+        return self._width
+
+    @property
+    def height(self) -> int:
+        return self._height
+
+    @property
+    def rect(self) -> Rect:
+        return self._rect
+
+    def move(self, x: int, y: int):
+        self.pos = (x, y)
+
+    @abstractmethod
+    def draw(self):
+        raise NotImplementedError()
+
+    
+class Label(GameObject):
+    def __init__(
+            self, x: int, y: int, text: str, 
+            color: Color=Color(0,0,0,1), 
+            fontSize: int=20, fontName: str="Times"):
+
+        GameObject.__init__(self, x, y, 0, 0) # TODO: Find way to get label height.
+        self._text = text
+        self._color = color
+        self._font = pygame.font.SysFont(fontName, fontSize)
+    
     @property
     def text(self) -> string:
         return self._text
@@ -205,10 +246,10 @@ class Label:
         textSurface = self.font.render(self.text, False, self.color)
         canvas.blit(textSurface, (self.x, self.y))
 
-class CardComponent:
-    def __init__(self, x: int, y: int, card: Card, flipped: bool = True):
-        self._x = x
-        self._y = y
+
+# TODO: Create SpriteObject class.
+class CardObject(GameObject):
+    def __init__(self, x: int, y: int, card: Card, flipped: bool=True):
         self._card = card
         self._flipped = flipped
         self._cardImg = pygame.image.load(self.card.filename)
@@ -217,14 +258,8 @@ class CardComponent:
         self._shouldFlip = False
         self._flipX = 0
         self._deal = False
-    
-    @property
-    def x(self) -> int:
-        return self._x
-    
-    @property
-    def y(self) -> int:
-        return self._y
+        w, h = self._cardImg.get_rect().size
+        GameObject.__init__(self, x, y, w, h)
     
     @property
     def card(self) -> int:
@@ -294,14 +329,13 @@ class CardComponent:
         else:
             canvas.blit(self.cardBack, (self.x, self.y))
 
-class Button:
 
+class Button(GameObject):
     def __init__(self, x: int, y: int, text: string, color: Color, downColor: Color = Color(0,0,0,1), fontColor: Color = Color(0,0,0,1),
                  borderWidth: int = 2, borderColor: Color = Color(0,0,0,1), 
                  fontSize: int = 20, fontName: string = "Times", padding: int = 4, 
-                 width: int = (-1), height: int = (-1), action = None):
-        self._x = x
-        self._y = y
+                 width: int=(-1), height: int=(-1), action=None):
+        GameObject.__init__(self, x, y, width, height)
         self._defaultWidth = width
         self._defaultHeight = height
         self._padding = padding
@@ -314,7 +348,7 @@ class Button:
         self._fontColor = fontColor
         self._action = action
         self._downColor = downColor
-        self._isDown = False
+        self._down = False
         self.setText(text)
     
     def setText(self, text: str):
@@ -330,32 +364,12 @@ class Button:
         self._rect = Rect(self.x, self.y, self.width, self.height)
 
     @property
-    def x(self) -> int:
-        return self._x
-
-    @property
-    def y(self) -> int:
-        return self._y
-
-    @property
-    def width(self) -> int:
-        return self._width
-
-    @property
-    def height(self) -> int:
-        return self._height
-
-    @property
     def padding(self) -> int:
         return self._padding
 
     @property
     def text(self) -> string:
         return self._text
-
-    @property
-    def rect(self) -> Rect:
-        return self._rect
 
     @property
     def color(self) -> Color:
@@ -380,19 +394,11 @@ class Button:
     @property
     def downColor(self):
         return self._downColor
-    
-    @property
-    def isDown(self):
-        return self._isDown
-    
-    def setDown(self, isDown):
-        self._isDown = isDown
-
+      
     def getColor(self):
-        if (self.isDown):
+        if self._down:
             return self.downColor
-        else:
-            return self.color
+        return self.color
     
     def draw(self, canvas: Surface):
         if (self._borderColor != None):
@@ -413,14 +419,10 @@ class Button:
                 paddingY = (self.height-textSurface.get_height())/2
             canvas.blit(textSurface, (self.x + paddingX, self.y + paddingY))
     
-    def handleClick(self, event: Event):
+    def handle_click(self, event: Event):
+        self._down = False
         if self.rect.collidepoint(pygame.mouse.get_pos()):
-            if event.type == pygame.MOUSEBUTTONUP and not (self.action == None):
-                self.action()
-                self.setDown(False)
+            if event.type == pygame.MOUSEBUTTONUP and self._action:
+                self._action()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                self.setDown(True)
-            else:
-                self.setDown(False)
-        else:
-            self.setDown(False)
+                self._down = True
