@@ -1,5 +1,5 @@
 import unittest
-from core import Deck, Card, Hand, Suite, Game, Player, HandType
+from core import Deck, Card, Hand, Suite, Game, Player, HandType, Statistics
 
 class TestMethods(unittest.TestCase):
     def test_create_deck(self):
@@ -159,6 +159,29 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(str(Card(2, Suite.diamonds)), "2D")
         self.assertEqual(str(Card(11, Suite.hearts)), "JH")
         
+    def test_expected_val(self):
+        hand = [Card(3, Suite.clubs), Card(3, Suite.spades), Card(10, Suite.clubs)]
+        probabilityDistribution = Statistics.probabilityDistribution(hand)
+        expectedDistribution = dict()
+        expectedDistribution[HandType.pair] = 880
+        expectedDistribution[HandType.two_pair] = 198
+        expectedDistribution[HandType.three_of_kind] = 88
+        expectedDistribution[HandType.full_house] = 9
+        expectedDistribution[HandType.four_of_kind] = 1
+        for k,v in probabilityDistribution.items():
+            if k in expectedDistribution:
+                self.assertEqual(v, expectedDistribution[k])
+            else:
+                self.assertEqual(v, 0)
+        self.assertEqual(sum(probabilityDistribution.values()), 1176)
+
+    def test_expected_pull(self):
+        hand = [Card(3, Suite.clubs), Card(3, Suite.spades), Card(10, Suite.clubs)]
+        self.assertEqual(Statistics.shouldRide(hand), False)
+    
+    def test_expected_ride(self):
+        hand = [Card(11, Suite.clubs), Card(11, Suite.spades), Card(12, Suite.clubs)]
+        self.assertEqual(Statistics.shouldRide(hand), True)
 
 if __name__ == '__main__':
     unittest.main()
