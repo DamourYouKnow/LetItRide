@@ -5,7 +5,16 @@ from pygame.font import Font
 import pygame
 import string
 from core import *
+from enum import Enum
 from typing import Tuple
+
+class Colors:
+    light_gray = Color(200, 200, 200, 1)
+    gray = Color(150, 150, 150, 1)
+    white = Color(255, 255, 255, 1)
+    black = Color(0, 0, 0, 1)
+    green = Color(0, 128, 100, 1)
+
 
 class Screen(ABC):
 
@@ -27,7 +36,7 @@ class Screen(ABC):
 
 class GameScreen(Screen):
     def __init__(self):
-        self._action = Button(300, 500, width=128, height=50, text="Make $1 Bet", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
+        self._action = Button(300, 500, width=128, height=50, text="Make $1 Bet", color=Colors.light_gray, downColor=Colors.gray,
             action=(self.action))
         self._pull = None
         self._winning = None
@@ -36,16 +45,16 @@ class GameScreen(Screen):
         self._cards = []
         self._background = pygame.image.load("./assets/felt.png")
         self._stage = 0
-        self._bankroll = Button(100, 500, height=50, text="Bankroll: ", color=Color(255,255,255,1), downColor=Color(255,255,255,1), padding=5, borderColor=Color(0,0,0,1))
+        self._bankroll = Button(100, 500, height=50, text="Bankroll: ", color=Colors.white, downColor=Colors.white, padding=5, borderColor=Colors.black)
         payoffTexts = ["%s: %d" % (str(x), Hand.payouts[x] if x in Hand.payouts else 0) for x in HandType if x != HandType.high and x != HandType.pair]
-        self._display = [Button(900, 50+30*i, width=200, height=30, text=x, color=Color(255,255,255,1), borderColor=None) for i, x in enumerate(payoffTexts)]
+        self._display = [Button(900, 50+30*i, width=200, height=30, text=x, color=Colors.white, borderColor=None) for i, x in enumerate(payoffTexts)]
         self._deck = CardObject(700, 50, Card(1, Suit.clubs), False)
-        self._bet_labels = [Button(210, 400, "$", width=80, height=30, color=Color(199,199,199,1), borderColor=None),
-            Button(310, 400, "2", width=80, height=30, color=Color(199,199,199,1), borderColor=None),
-            Button(410, 400, "1", width=80, height=30, color=Color(199,199,199,1), borderColor=None)]
-        self._bets = [Button(210, 430, None, width=80, height=30, color=Color(199,199,199,1), borderColor = None),
-            Button(310, 430, None, width=80, height=30, color=Color(199,199,199,1), borderColor = None),
-            Button(410, 430, None, width=80, height=30, color=Color(199,199,199,1), borderColor = None)]
+        self._bet_labels = [Button(210, 400, "$", width=80, height=30, color=Colors.light_gray, borderColor=None),
+            Button(310, 400, "2", width=80, height=30, color=Colors.light_gray, borderColor=None),
+            Button(410, 400, "1", width=80, height=30, color=Colors.light_gray, borderColor=None)]
+        self._bets = [Button(210, 430, None, width=80, height=30, color=Colors.light_gray, borderColor = None),
+            Button(310, 430, None, width=80, height=30, color=Colors.light_gray, borderColor = None),
+            Button(410, 430, None, width=80, height=30, color=Colors.light_gray, borderColor = None)]
 
     def action(self, pull=False):
         if (self._stage == 0):
@@ -63,7 +72,7 @@ class GameScreen(Screen):
             [self._cards[i].flip() for i in range(3)]
 
             self._stage = 1
-            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 1", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
+            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 1", color=Colors.gray, downColor=Colors.gray,
             action=(lambda: self.action(True)))
             self._action._text = "Let it ride"
             self._winning = None
@@ -74,7 +83,7 @@ class GameScreen(Screen):
             if (pull):
                 self._game.player.pull()
                 self._bets[2].text = ""
-            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 2", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
+            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 2", color=Colors.gray, downColor=Colors.gray,
                 action=(lambda: self.action(True)))
             print(Statistics.expectedValue(self.game.player.hand.cards[0:4]))
         elif (self._stage == 2):
@@ -83,13 +92,13 @@ class GameScreen(Screen):
                 self._game.player.pull()
                 self._bets[1].text = ""
             self._cards[4].flip()
-            self._pull = Button(500, 500, width=128, height=50, text="Clear Bet", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
+            self._pull = Button(500, 500, width=128, height=50, text="Clear Bet", color=Colors.gray, downColor=Colors.gray,
                 action=(lambda: self.clear()))
             self._game.player.payout()
             payout = self._game.player.hand.payout(self._game.player.full_bet)
             winText = str(self.game.player.hand.type) + " - Win $" + str(payout)
-            self._winning = Button(250, 25, width=228, height=50, text=winText, color=Color(255,255,255,1), 
-                    downColor=Color(255,255,255,1), padding=5, borderColor=Color(0,0,0,1))
+            self._winning = Button(250, 25, width=228, height=50, text=winText, color=Colors.white, 
+                    downColor=Colors.white, padding=5, borderColor=Colors.black)
             self._action._text = "Repeat Bet"
             print(Statistics.expectedValue(self.game.player.hand.cards))
 
@@ -146,7 +155,7 @@ class MainMenu(Screen):
     def __init__(self):
         self._next_screen = self
         self._buttons = [
-            Button(20, 20, "Hello!", Color(0,128,100,1), action=self._to_game)
+            Button(20, 20, "Hello!", Colors.green, action=self._to_game)
         ]
         self._labels = [Label(50, 50, "Let It Ride Poker", font_size = 50)]
 
@@ -232,7 +241,7 @@ class GameObject(ABC):
 class Label(GameObject):
     def __init__(
             self, x: int, y: int, text: str, 
-            color: Color=Color(0,0,0,1), 
+            color: Color=Colors.black, 
             font_size: int=20, font_name: str="Times"):
         self._text = text
         self._color = color
@@ -346,8 +355,8 @@ class CardObject(GameObject):
 
 
 class Button(GameObject):
-    def __init__(self, x: int, y: int, text: str, color: Color, downColor: Color = Color(0,0,0,1),
-                 borderWidth: int = 2, borderColor: Color = Color(0,0,0,1), padding: int = 4, 
+    def __init__(self, x: int, y: int, text: str, color: Color, downColor: Color = Colors.black,
+                 borderWidth: int = 2, borderColor: Color = Colors.black, padding: int = 4, 
                  width: int=(-1), height: int=(-1), action=None):
         GameObject.__init__(self, x, y, width, height)
         self._defaultWidth = width
