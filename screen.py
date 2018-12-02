@@ -67,6 +67,7 @@ class GameScreen(Screen):
             action=(lambda: self.action(True)))
             self._action._text = "Let it ride"
             self._winning = None
+            print(Statistics.expectedValue(self.game.player.hand.cards[0:3]))
         elif (self._stage == 1):
             self._stage = 2
             self._cards[3].flip()    
@@ -75,6 +76,7 @@ class GameScreen(Screen):
                 self._bets[2].setText("")
             self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 2", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
                 action=(lambda: self.action(True)))
+            print(Statistics.expectedValue(self.game.player.hand.cards[0:4]))
         elif (self._stage == 2):
             self._stage = 0
             if (pull):
@@ -83,11 +85,13 @@ class GameScreen(Screen):
             self._cards[4].flip()
             self._pull = Button(500, 500, width=128, height=50, text="Clear Bet", color=Color(200,200,200,1), downColor=Color(150,150,150,1),
                 action=(lambda: self.clear()))
+            self._game.player.payout()
             payout = self._game.player.hand.payout(self._game.player.full_bet)
             winText = str(self.game.player.hand.type) + " - Win $" + str(payout)
             self._winning = Button(250, 25, width=228, height=50, text=winText, color=Color(255,255,255,1), 
                     downColor=Color(255,255,255,1), padding=5, borderColor=Color(0,0,0,1))
             self._action._text = "Repeat Bet"
+            print(Statistics.expectedValue(self.game.player.hand.cards))
 
     def clear(self):
         if (self._stage == 0):
