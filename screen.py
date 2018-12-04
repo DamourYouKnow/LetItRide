@@ -48,6 +48,10 @@ class GameScreen(Screen):
         self._bankroll = Button(100, 500, height=50, text="Bankroll: ", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
         payoffTexts = ["%s: %d" % (str(k), v) for k,v in Hand.payouts.items() if k not in [HandType.high, HandType.pair]]
         self._display = [Button(900, 50+30*i, width=200, height=30, text=x, color=Colors.white, border_color=None) for i, x in enumerate(payoffTexts)]
+		
+        payoffSideTexts = ["%s: %d" % (str(z), x) for z,x in Hand.sidePayouts.items() if z not in [HandType.high, HandType.pair]]
+        self._displaySide = [Button(900, 400+30*i, width=200, height=30, text=x, color=Colors.white, border_color=None) for i, x in enumerate(payoffSideTexts)]
+		
         self._deck = CardObject(700, 50, Card(1, Suit.clubs), False)
         self._bet_labels = [
             Button(210, 400, "$", width=80, height=30),
@@ -59,6 +63,7 @@ class GameScreen(Screen):
             Button(310, 430, None, width=80, height=30),
             Button(410, 430, None, width=80, height=30)
         ]
+		
 
     def action(self, pull=False):
         if (self._stage == 0):
@@ -138,6 +143,7 @@ class GameScreen(Screen):
         self._bankroll.draw(canvas)
         self._deck.draw(canvas)
         [x.draw(canvas) for x in self._display]
+        [x.draw(canvas) for x in self._displaySide]
         if self._pull:
             self._pull.draw(canvas)
         if self._winning:
@@ -153,12 +159,22 @@ class GameScreen(Screen):
 class MainMenu(Screen):
     def __init__(self):
         self._next_screen = self
-        self._buttons = [
-            Button(20, 20, "Hello!", Colors.green, action=self._to_game)
+        self._buttons2 = [
+            #Button(25, 25, "Setting", Colors.green, action=self._to_settings)
         ]
-        self._labels = [Label(50, 50, "Let It Ride Poker", font_size = 50)]
+        self._buttons = [
+		    Button(100, 200, "Play", Colors.green,width=150, height=100, action=self._to_game),
+            #Button(100, 300, "Settings", Colors.green, action=self._to_settings)
+        ]
+        self._labels = [
+		    Label(50, 50, "Let It Ride Poker", font_size = 64),
+		    Label(600, 200, "Settings", font_size = 24)
+		]
 
     def _to_game(self):
+        self._next_screen = GameScreen()
+		
+    def _to_settings(self):
         self._next_screen = GameScreen()
     
     @property

@@ -38,6 +38,10 @@ class HandType(Enum):
     high_pair = 9
     pair = 10
     high = 11
+	
+	
+	#leave this here for now 
+    mini_royal= 12
 
     def __str__(self) -> str:
         strings = {
@@ -51,7 +55,13 @@ class HandType(Enum):
             HandType.two_pair: "Two Pair",
             HandType.high_pair: "10s or Better",
             HandType.pair: "Nothing",
-            HandType.high: "Nothing"
+            HandType.high: "Nothing",
+			
+			
+			#sidebet strings 
+            HandType.mini_royal: "Mini Royal"
+            
+			
         }
         return strings[self]
 
@@ -116,6 +126,14 @@ class Hand:
         HandType.two_pair: 2,
         HandType.high_pair: 1
     }
+    sidePayouts = {
+        HandType.mini_royal: 50,
+        HandType.straight_flush: 40,
+        HandType.three_of_kind: 30,
+        HandType.straight: 6,
+        HandType.flush: 3,
+        HandType.pair: 1
+        }
 
     def __init__(self, cards: List[Card]=[]):
         self._cards = cards
