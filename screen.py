@@ -257,10 +257,10 @@ class Label(GameObject):
     def __init__(
             self, x: int, y: int, text: str, 
             color: Color=Colors.black, 
-            font_size: int=20, font_name: str="Times"):
+            font_size: int=20, font_name: str="Times", bold: int=0, italic: int=0):
         self._text = text
         self._color = color
-        self._font = pygame.font.SysFont(font_name, font_size)    
+        self._font = pygame.font.SysFont(font_name, font_size, bold=bold, italic=italic)    
         w, h = self.font.render(self.text, False, (0,0,0)).get_rect().size
         GameObject.__init__(self, x, y, w, h)
     
