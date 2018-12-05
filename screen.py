@@ -425,12 +425,12 @@ class Button(GameObject):
         return self._color
     
     def draw(self, canvas: Surface):
-        if self._border_color:
-            pygame.draw.rect(canvas, self._border_color, self.rect)
         if self.color:
             pygame.draw.rect(
                     canvas, self.color, 
                     Rect(self.x, self.y, self.width, self.height))
+        if self._border_color:
+            pygame.draw.rect(canvas, self._border_color, self.rect, self.border_width)
         self._label.draw(canvas)
     
     def handle(self, event: Event):
