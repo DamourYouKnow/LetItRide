@@ -251,6 +251,23 @@ class Game:
         self._deck.shuffle()
         self.player.hand = Hand([self._deck.draw() for _ in range(5)])
 
+class Settings:
+    def __init__(self, player_name: str="Player", player_bankroll: int=1000, game_decks: int=1):
+        self._player_name = player_name
+        self._player_bankroll = player_bankroll
+        self._game_decks = game_decks
+    
+    @property
+    def player_name(self):
+        return self._player_name
+
+    @property
+    def player_bankroll(self):
+        return self._player_bankroll
+
+    @property
+    def game_decks(self):
+        return self._game_decks
     
 class Player:
     """

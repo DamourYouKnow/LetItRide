@@ -35,12 +35,12 @@ class Screen(ABC):
         return self
 
 class GameScreen(Screen):
-    def __init__(self):
+    def __init__(self, settings: Settings):
         self._action = Button(300, 500, width=128, height=50, text="Make $1 Bet", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.action))
         self._pull = None
         self._winning = None
-        self._game = Game()
+        self._game = Game(settings.game_decks, settings.player_name, settings.player_bankroll)
         self.game.deal()
         self._cards = []
         self._background = pygame.image.load("./assets/felt.png")
@@ -157,25 +157,25 @@ class GameScreen(Screen):
 
 
 class MainMenu(Screen):
-    def __init__(self):
+    def __init__(self, settings=Settings()):
         self._next_screen = self
+        self._settings = settings
         self._buttons2 = [
             #Button(25, 25, "Setting", Colors.green, action=self._to_settings)
         ]
         self._buttons = [
 		    Button(100, 200, "Play", Colors.green,width=150, height=100, action=self._to_game),
-            #Button(100, 300, "Settings", Colors.green, action=self._to_settings)
+            Button(100, 300, "Settings", Colors.green, action=self._to_settings)
         ]
         self._labels = [
 		    Label(50, 50, "Let It Ride Poker", font_size = 64),
-		    Label(600, 200, "Settings", font_size = 24)
 		]
 
     def _to_game(self):
-        self._next_screen = GameScreen()
+        self._next_screen = GameScreen(self._settings)
 		
     def _to_settings(self):
-        self._next_screen = GameScreen()
+        self._next_screen = SettingsScreen(self._settings)
     
     @property
     def buttons(self):
@@ -198,6 +198,51 @@ class MainMenu(Screen):
     def next(self):
         return self._next_screen
 
+class SettingsScreen(Screen):
+
+    def __init__(self, settings: Settings=Settings()):
+        self._player_name = TextBox(350, 150, 600, 40, text=settings.player_name, placeholder_text="Name...", font_size=30)
+        self._player_money = TextBox(350, 210, 600, 40, text=str(settings.player_bankroll), placeholder_text="Money...", font_size=30)
+        self._game_decks = TextBox(350, 270, 600, 40, text=str(settings.game_decks), placeholder_text="Decks...", font_size=30)
+        self._warning = Button(380, 600, width=440, color=Color(220, 100, 100, 1), text=None)
+        self._components = [
+            Label(480, 20, "Settings", font_size=64, font_name="Impact"),
+            Label(200, 150, "Player: ", font_size=36),
+            self._player_name,
+            Label(200, 210, "Bankroll: ", font_size=36),
+            self._player_money,
+            Label(200, 270, "Decks: ", font_size=36),
+            self._game_decks,
+            Button(480, 600, width=240, color=Colors.white, text="Back", action=(lambda: self.gather_settings()))
+        ]
+        self._next_screen = self
+        self._background = pygame.image.load("./assets/felt.png")
+
+    def gather_settings(self):
+        if (self._warning.text == None):
+            self._next_screen = MainMenu(Settings(self._player_name.text, int(self._player_money.text), int(self._game_decks.text)))
+
+    def handle(self, event: Event):
+        [component.handle(event) for component in self._components]
+
+    def update(self):
+        if (not self._player_money.text.isdigit()):
+            self._warning.text = "Player money must be a number"
+        elif (not self._game_decks.text.isdigit()):
+            self._warning.text = "Game decks must be a number"
+        else:
+            self._warning.text = None
+
+    def draw(self, canvas: Surface):
+        canvas.fill(Colors.white)
+        canvas.blit(self._background, (0,0))
+        pygame.draw.rect(canvas, Color(180, 180, 180, 0), Rect(150, 0, 900, 675))
+        [component.draw(canvas) for component in self._components]
+        if (self._warning.text != None):
+            self._warning.draw(canvas)
+
+    def next(self):
+        return self._next_screen
 
 class GameObject(ABC):
     def __init__(self, x: int, y: int, width: int, height: int):
@@ -252,6 +297,61 @@ class GameObject(ABC):
     def draw(self, canvas: Surface):
         raise NotImplementedError()
 
+class TextBox(GameObject):
+    def __init__(
+            self, x: int, y: int, width: int, height: int, text: str=None, placeholder_text: str="", placeholder_color: Color=Colors.gray,
+            font_color: Color=Colors.black, background_color: Color=Colors.white, halo_color: Color=Color(0, 180, 210, 1),
+            font_size: int=20, font_name: str="Times"):
+        self._default_text = placeholder_text
+        self._font_color = font_color
+        self._placeholder_color = placeholder_color
+        self._background_color = background_color
+        self._halo_color = halo_color
+        self._font = pygame.font.SysFont(font_name, font_size)
+        self._selected = False
+        self._empty = (text == None)
+        if not self._empty:
+            self._label = Label(x+4, y+(height-font_size)/2-1, text, color=font_color, font_size=font_size, font_name=font_name)
+        else:
+            self._label = Label(x+4, y+(height-font_size)/2-1, placeholder_text, color=placeholder_color, font_size = font_size, font_name = font_name)
+        GameObject.__init__(self, x, y, width, height)
+
+    @property
+    def text(self):
+        return self._label.text if not self._empty else "" 
+
+    def handle(self, event: Event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(pygame.mouse.get_pos()):
+                self._selected = True
+            else:
+                self._selected = False
+        if self._selected and event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_BACKSPACE:
+                if (not self._empty):
+                    self._label.text = self._label.text[:-1]
+                    if (self._label.text == ""):
+                        self._empty = True
+                        self._label._color = self._placeholder_color
+                        self._label.text = self._default_text
+            elif event.unicode != "" and ord(event.unicode)>=32 and ord(event.unicode)<= 126 and self._label.width < self.width-10:
+                if (self._empty):
+                    self._label.text = "" + event.unicode
+                    self._label._color = self._font_color
+                    self._empty = False
+                else:
+                    self._label.text = self._label.text + event.unicode
+
+    def draw(self, canvas: Surface):
+        padding = 2
+        pygame.draw.rect(
+                canvas, self._background_color, 
+                Rect(self.x, self.y, self.width, self.height))
+        if (self._selected):
+            pygame.draw.rect(canvas, self._halo_color, self.rect, 1)
+        else:
+            pygame.draw.rect(canvas, Colors.black, self.rect, 1)
+        self._label.draw(canvas)
     
 class Label(GameObject):
     def __init__(
