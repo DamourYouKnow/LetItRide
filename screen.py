@@ -129,9 +129,9 @@ class GameScreen(Screen):
         return self._cards
 
     def handle(self, event: Event):
-        self._action.handle_click(event)
+        self._action.handle(event)
         if (self._pull != None):
-            self._pull.handle_click(event)
+            self._pull.handle(event)
 
     def update(self):
         self._bankroll.text = "Bankroll: " + str(self.game.player.money)
@@ -186,7 +186,7 @@ class MainMenu(Screen):
 
     def handle(self, event: Event):
         for button in self.buttons:
-            button.handle_click(event)
+            button.handle(event)
 
     def update(self):
         pass
@@ -245,8 +245,11 @@ class GameObject(ABC):
     def move(self, x: int, y: int):
         self.pos = (x, y)
 
+    def handle(self, event: Event):
+        pass
+
     @abstractmethod
-    def draw(self):
+    def draw(self, canvas: Surface):
         raise NotImplementedError()
 
     
@@ -430,7 +433,7 @@ class Button(GameObject):
                     Rect(self.x, self.y, self.width, self.height))
         self._label.draw(canvas)
     
-    def handle_click(self, event: Event):
+    def handle(self, event: Event):
         self._down = False
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if event.type == pygame.MOUSEBUTTONUP and self._action:
