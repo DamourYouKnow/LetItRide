@@ -46,12 +46,11 @@ class GameScreen(Screen):
         self._background = pygame.image.load("./assets/felt.png")
         self._stage = 0
         self._bankroll = Button(100, 500, height=50, text="Bankroll: ", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
-        payoffTexts = ["%s: %d" % (str(k), v) for k,v in Hand.payouts.items() if k not in [HandType.high, HandType.pair]]
-        self._display = [Button(900, 50+30*i, width=200, height=30, text=x, color=Colors.white, border_color=None) for i, x in enumerate(payoffTexts)]
-		
-        payoffSideTexts = ["%s: %d" % (str(z), x) for z,x in Hand.sidePayouts.items() if z not in [HandType.high, HandType.pair]]
-        self._displaySide = [Button(900, 400+30*i, width=200, height=30, text=x, color=Colors.white, border_color=None) for i, x in enumerate(payoffSideTexts)]
-		
+        payoffTexts = ["Payouts", "-------"] + ["%s: %d" % (str(k), v) for k,v in Hand.payouts.items() if k not in [HandType.high, HandType.pair]]
+        self._payoffs = TextArea(900, 50, payoffTexts, width=200, background_color=Color(255, 255, 255, 255))
+        payoffSideTexts = ["Sidebet Payouts", "---------------"] + ["%s: %d" % (str(z), x) for z,x in Hand.sidePayouts.items() if z not in [HandType.high, HandType.pair]]
+        self._payoffs_side = TextArea(900, 320, width=200, texts=payoffSideTexts, background_color=Color(255, 255, 255, 255))
+        self._statistics = None
         self._deck = CardObject(700, 50, Card(1, Suit.clubs), False)
         self._bet_labels = [
             Button(210, 400, "$", width=80, height=30),
@@ -64,7 +63,6 @@ class GameScreen(Screen):
             Button(410, 430, None, width=80, height=30)
         ]
 		
-
     def action(self, pull=False):
         if (self._stage == 0):
             self._game.deal()
@@ -81,35 +79,49 @@ class GameScreen(Screen):
             [self._cards[i].flip() for i in range(3)]
 
             self._stage = 1
-            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 1", color=Colors.gray, down_color=Colors.gray,
+            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 1", color=Colors.light_gray, down_color=Colors.gray,
             action=(lambda: self.action(True)))
             self._action.text = "Let it ride"
             self._winning = None
-            print(Statistics.expectedValue(self.game.player.hand.cards[0:3]))
+            self.update_statistics()
         elif (self._stage == 1):
             self._stage = 2
             self._cards[3].flip()    
             if (pull):
                 self._game.player.pull()
                 self._bets[2].text = ""
-            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 2", color=Colors.gray, down_color=Colors.gray,
+            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 2", color=Colors.light_gray, down_color=Colors.gray,
                 action=(lambda: self.action(True)))
-            print(Statistics.expectedValue(self.game.player.hand.cards[0:4]))
+            self.update_statistics()
         elif (self._stage == 2):
             self._stage = 0
             if (pull):
                 self._game.player.pull()
                 self._bets[1].text = ""
             self._cards[4].flip()
-            self._pull = Button(500, 500, width=128, height=50, text="Clear Bet", color=Colors.gray, down_color=Colors.gray,
+            self.update_statistics()
+            self._pull = Button(500, 500, width=128, height=50, text="Clear Bet", color=Colors.light_gray, down_color=Colors.gray,
                 action=(lambda: self.clear()))
             self._game.player.payout()
             payout = self._game.player.hand.payout(self._game.player.full_bet)
             winText = str(self.game.player.hand.type) + " - Win $" + str(payout)
             self._winning = Button(250, 25, width=228, height=50, text=winText, color=Colors.white, 
                     down_color=Colors.white, padding=5, border_color=Colors.black)
-            self._action._text = "Repeat Bet"
-            print(Statistics.expectedValue(self.game.player.hand.cards))
+            self._action.text = "Repeat Bet"
+    def update_statistics(self):
+        if (self._stage == 1 or self._stage == 2):
+            cards = self.game.player.hand.cards[0:self._stage + 2]
+        else:
+            cards = self.game.player.hand.cards
+        probabilities = Statistics.probabilityDistribution(cards)
+        self._probabilityWin = sum([v for k,v in probabilities.items() if k in Hand.payouts])/Statistics.choose(52-2-self._stage, 3-self._stage)
+        self._expectedValue = Statistics.expectedValue(cards, probabilities)
+        self._shouldRide = Statistics.shouldRide(cards, self._expectedValue)
+        self._statistics = TextArea(900, 500, [
+            "Should Ride: " + str(self._shouldRide),
+            "Expected Value: " + ("%.3f" % self._expectedValue),
+            "Probability Win: " + ("%.3f" % self._probabilityWin)
+        ], width=200, background_color=Color(255, 255, 255, 255))
 
     def clear(self):
         if (self._stage == 0):
@@ -117,6 +129,7 @@ class GameScreen(Screen):
             self._action._text = "Make 1$ Bet"
             self._cards = []
             self._winning = None
+            self._statistics = None
             for bet in self._bets:
                 bet.text = None
 
@@ -142,8 +155,10 @@ class GameScreen(Screen):
         self._action.draw(canvas)
         self._bankroll.draw(canvas)
         self._deck.draw(canvas)
-        [x.draw(canvas) for x in self._display]
-        [x.draw(canvas) for x in self._displaySide]
+        self._payoffs.draw(canvas)
+        self._payoffs_side.draw(canvas)
+        if (self._statistics):
+            self._statistics.draw(canvas)
         if self._pull:
             self._pull.draw(canvas)
         if self._winning:
@@ -352,7 +367,57 @@ class TextBox(GameObject):
         else:
             pygame.draw.rect(canvas, Colors.black, self.rect, 1)
         self._label.draw(canvas)
+
+class TextArea(GameObject):
+    def __init__(
+            self, x: int, y: int, texts: List[str], width: int=0, height: int=0, 
+            color: Color=Colors.black, background_color: Color=None,
+            font_size: int=20, font_name: str="Times", bold: int=0, italic: int=0, padding=1, centered=True):
+        self._color = color
+        self._background_color = background_color
+        self._padding = padding
+        self._default_width = width
+        self._default_height = height
+        self._centered = centered
+        self._font = pygame.font.SysFont(font_name, font_size, bold=bold, italic=italic)   
+        GameObject.__init__(self, x, y, width, height)
+        self.texts = texts
     
+    @property
+    def texts(self) -> List[str]:
+        return self._texts
+
+    @texts.setter
+    def texts(self, value: List[str]):
+        self._texts = value
+        rects = [self.font.render(text, False, (0,0,0)).get_rect() for text in self._texts]
+        if (self._default_width <= 0):
+            width = max([rect.width for rect in rects])+2*self._padding
+        else:
+            width = self._default_width
+        if (self._default_height <= 0):
+            height = sum([rect.height for rect in rects])+2*self._padding
+        else:
+            height = self._default_height
+        self.size = (width,height)
+
+    @property
+    def color(self) -> Color:
+        return self._color
+
+    @property
+    def font(self) -> Font:
+        return self._font
+
+    def draw(self, canvas: Surface):
+        textSurfaces = [self.font.render(text, False, self.color) for text in self.texts]
+        if (self._background_color != None):
+            pygame.draw.rect(canvas, self._background_color, Rect(self.x, self.y, self.width, self.height))
+        [canvas.blit(textSurface, 
+            (self.x+self._padding + ((self.width-textSurface.get_width())/2 if self._centered else 0),
+                self.y + self._padding + (i*self.font.get_height()))) 
+            for i, textSurface in enumerate(textSurfaces)]
+
 class Label(GameObject):
     def __init__(
             self, x: int, y: int, text: str, 

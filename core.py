@@ -329,12 +329,13 @@ class Player:
 
 class Statistics:
 
-    def shouldRide(cards):
-        return Statistics.expectedValue(cards) >= 0
+    def shouldRide(cards, expectedValue = None):
+        ev = expectedValue if expectedValue != None else Statistics.expectedValue(cards)
+        return expectedValue >= 0
 
-    def expectedValue(cards):
+    def expectedValue(cards, probabilityDistribution = None):
         choose = 5-len(cards)
-        results = Statistics.probabilityDistribution(cards)
+        results = probabilityDistribution if probabilityDistribution != None else Statistics.probabilityDistribution(cards)
         possibilities = Statistics.choose(52-5+choose, choose)
         ev = 0
         for k,v in results.items():
