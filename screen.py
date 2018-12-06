@@ -224,9 +224,7 @@ class CardSelectorScreen(Screen):
             self._selected.remove(card)
         else:
             self._selected.append(card)
-        if (len(self._selected) >= 5):
-            self.back()
-        else:
+        if (len(self._selected) < 5):
             self._title = Label(500, 50, "Select Card " + str(len(self._selected) + 1), font_size=50)
             if (len(self._selected) == 0):
                 self._back.text = "Back"
@@ -245,7 +243,7 @@ class CardSelectorScreen(Screen):
         self._game_screen.game._deck = Deck(self._game_screen.game._deck_count) # We may want to change this logic.
         self._game_screen.game._deck.shuffle()
         [self._game_screen.game._deck._cards.remove(card) for card in self._selected]
-        self._game_screen.game.player.hand = Hand(self._selected + [self._deck.draw() for _ in range(5-len(self._selected))])
+        self._game_screen.game.player.hand = Hand(self._selected + [self._game_screen.game.deck.draw() for _ in range(5-len(self._selected))])
 
 
     def update(self):
