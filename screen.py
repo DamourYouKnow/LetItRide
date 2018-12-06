@@ -40,6 +40,8 @@ class GameScreen(Screen):
             action=(self.action))
         self._pull = None
         self._winning = None
+        self._autoplay_button = Button(700, 250, width=128, height=40, text="Autoplay On", color=Colors.light_gray, down_color=Colors.gray,
+            action=(self.autoplay))
         self._game = Game(settings.game_decks, settings.player_name, settings.player_bankroll)
         self.game.deal()
         self._cards = []
@@ -51,6 +53,7 @@ class GameScreen(Screen):
         payoffSideTexts = ["Sidebet Payouts", "---------------"] + ["%s: %d" % (str(z), x) for z,x in Hand.sidePayouts.items() if z not in [HandType.high, HandType.pair]]
         self._payoffs_side = TextArea(900, 320, width=200, texts=payoffSideTexts, background_color=Color(255, 255, 255, 255))
         self._statistics = None
+        self._autoplay = False
         self._deck = CardObject(700, 50, Card(1, Suit.clubs), False)
         self._bet_labels = [
             Button(210, 400, "$", width=80, height=30),
@@ -108,6 +111,18 @@ class GameScreen(Screen):
             self._winning = Button(250, 25, width=228, height=50, text=winText, color=Colors.white, 
                     down_color=Colors.white, padding=5, border_color=Colors.black)
             self._action.text = "Repeat Bet"
+
+    def home(self, settings):
+        self._next_screen = MainMenu(settings)
+
+    def autoplay(self):
+        if (self._autoplay):
+            self._autoplay = False
+            self._autoplay_button.text = "Autoplay On"
+        else:
+            self._autoplay = True
+            self._autoplay_button.text = "Autoplay Off"
+
     def update_statistics(self):
         if (self._stage == 1 or self._stage == 2):
             cards = self.game.player.hand.cards[0:self._stage + 2]
@@ -143,11 +158,17 @@ class GameScreen(Screen):
 
     def handle(self, event: Event):
         self._action.handle(event)
+        self._autoplay_button.handle(event)
         if (self._pull != None):
             self._pull.handle(event)
 
     def update(self):
         self._bankroll.text = "Bankroll: " + str(self.game.player.money)
+        if (self._autoplay and len([card for card in self.cards if card._deal or card._flipping]) == 0):
+            if (self._stage == 1 or self._stage == 2):
+                self.action(not(self._shouldRide))
+            else:
+                self.action()
 
     def draw(self, canvas: Surface):
         canvas.fill(Colors.white)
@@ -157,6 +178,7 @@ class GameScreen(Screen):
         self._deck.draw(canvas)
         self._payoffs.draw(canvas)
         self._payoffs_side.draw(canvas)
+        self._autoplay_button.draw(canvas)
         if (self._statistics):
             self._statistics.draw(canvas)
         if self._pull:
