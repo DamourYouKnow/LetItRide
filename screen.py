@@ -42,6 +42,8 @@ class GameScreen(Screen):
         self._winning = None
         self._autoplay_button = Button(700, 250, width=128, height=40, text="Autoplay On", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.autoplay))
+        self._main_menu = Button(50, 50, width=100, height=50, text="Main Menu", color=Colors.light_gray, down_color=Colors.gray, 
+            action=(lambda: self.home(settings)))
         self._game = Game(settings.game_decks, settings.player_name, settings.player_bankroll)
         self.game.deal()
         self._cards = []
@@ -54,6 +56,8 @@ class GameScreen(Screen):
         self._payoffs_side = TextArea(900, 320, width=200, texts=payoffSideTexts, background_color=Color(255, 255, 255, 255))
         self._statistics = None
         self._autoplay = False
+        self._next_screen = self
+
         self._deck = CardObject(700, 50, Card(1, Suit.clubs), False)
         self._bet_labels = [
             Button(210, 400, "$", width=80, height=30),
@@ -159,6 +163,7 @@ class GameScreen(Screen):
     def handle(self, event: Event):
         self._action.handle(event)
         self._autoplay_button.handle(event)
+        self._main_menu.handle(event)
         if (self._pull != None):
             self._pull.handle(event)
 
@@ -179,6 +184,7 @@ class GameScreen(Screen):
         self._payoffs.draw(canvas)
         self._payoffs_side.draw(canvas)
         self._autoplay_button.draw(canvas)
+        self._main_menu.draw(canvas)
         if (self._statistics):
             self._statistics.draw(canvas)
         if self._pull:
@@ -190,7 +196,7 @@ class GameScreen(Screen):
         [bet.draw(canvas) for bet in self._bets if bet.text]
 
     def next(self):
-        return self
+        return self._next_screen
 
 
 class MainMenu(Screen):
