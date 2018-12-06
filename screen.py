@@ -42,6 +42,8 @@ class GameScreen(Screen):
         self._winning = None
         self._autoplay_button = Button(700, 250, width=128, height=40, text="Autoplay On", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.autoplay))
+        self._card_selector_button = Button(700, 300, width=128, height=40, text="Card Selector", color=Colors.light_gray, down_color=Colors.gray,
+            action=(self.cardselector))
         self._main_menu = Button(50, 50, width=100, height=50, text="Main Menu", color=Colors.light_gray, down_color=Colors.gray, 
             action=(lambda: self.home(settings)))
         self._game = Game(settings.game_decks, settings.player_name, settings.player_bankroll)
@@ -127,6 +129,9 @@ class GameScreen(Screen):
             self._autoplay = True
             self._autoplay_button.text = "Autoplay Off"
 
+    def cardselector(self):
+        self._next_screen = CardSelectorScreen(self)
+
     def update_statistics(self):
         if (self._stage == 1 or self._stage == 2):
             cards = self.game.player.hand.cards[0:self._stage + 2]
@@ -163,6 +168,8 @@ class GameScreen(Screen):
     def handle(self, event: Event):
         self._action.handle(event)
         self._autoplay_button.handle(event)
+        if (self._stage == 0):
+            self._card_selector_button.handle(event)
         self._main_menu.handle(event)
         if (self._pull != None):
             self._pull.handle(event)
@@ -185,6 +192,8 @@ class GameScreen(Screen):
         self._payoffs_side.draw(canvas)
         self._autoplay_button.draw(canvas)
         self._main_menu.draw(canvas)
+        if (self._stage == 0):
+            self._card_selector_button.draw(canvas)
         if (self._statistics):
             self._statistics.draw(canvas)
         if self._pull:
@@ -198,6 +207,65 @@ class GameScreen(Screen):
     def next(self):
         return self._next_screen
 
+class CardSelectorScreen(Screen):
+    
+    def __init__(self, game: GameScreen):
+        self._title = Label(500, 50, "Select Card 1", font_size=50)
+        self._back = Button(200, 50, "Back", action=self.back)
+        deck = Deck().cards
+        deck.sort(key=(lambda x: (x.Suit.value, x.rank)))
+        self._cards = [CardObject(10+91*(i%13),100+130*(i//13),card,scale=0.7,action=(lambda x: self.action(x))) for i, card in enumerate(deck)]
+        self._selected = []
+        self._next_screen = self
+        self._game_screen = game
+
+    def action(self, card):
+        if (card in self._selected):
+            self._selected.remove(card)
+        else:
+            self._selected.append(card)
+        if (len(self._selected) >= 5):
+            self.back()
+        else:
+            self._title = Label(500, 50, "Select Card " + str(len(self._selected) + 1), font_size=50)
+            if (len(self._selected) == 0):
+                self._back.text = "Back"
+            else:
+                self._back.text = "Save cards"
+
+    def back(self):
+        if len(self._selected) > 0:
+            self._game_deal = self._game_screen.game.deal
+            self._game_screen.game.deal = self.deal
+        self._game_screen._next_screen = self._game_screen
+        self._next_screen = self._game_screen 
+
+    def deal(self):
+        self._game_screen.game.deal = self._game_deal
+        self._game_screen.game._deck = Deck(self._game_screen.game._deck_count) # We may want to change this logic.
+        self._game_screen.game._deck.shuffle()
+        [self._game_screen.game._deck._cards.remove(card) for card in self._selected]
+        self._game_screen.game.player.hand = Hand(self._selected + [self._deck.draw() for _ in range(5-len(self._selected))])
+
+
+    def update(self):
+        pass
+
+    def handle(self, event):
+        self._back.handle(event)
+        [card.handle(event) for card in self._cards]
+
+    def draw(self, canvas):
+        canvas.fill(Colors.white)
+        for card in self._cards:
+            card.draw(canvas)
+            if card.card in self._selected:
+                pygame.draw.rect(canvas, Color(100, 255, 255, 2), Rect(card.x-1, card.y-1, card.width+2, card.height+2), 4)
+        self._title.draw(canvas)
+        self._back.draw(canvas)
+
+    def next(self):
+        return self._next_screen
 
 class MainMenu(Screen):
     def __init__(self, settings=Settings()):
@@ -213,6 +281,8 @@ class MainMenu(Screen):
         self._labels = [
 		    Label(50, 50, "Let It Ride Poker", font_size = 64),
 		]
+        TextureManager.load("./assets/card_back.png")
+        [TextureManager.load(card.filename) for card in Deck().cards]
 
     def _to_game(self):
         self._next_screen = GameScreen(self._settings)
@@ -286,6 +356,20 @@ class SettingsScreen(Screen):
 
     def next(self):
         return self._next_screen
+
+class TextureManager:
+    textures = dict()
+
+    def save(path, img):
+        TextureManager.textures[path] = img
+
+    def load(path: str) -> Surface:
+        if (path in TextureManager.textures):
+            return TextureManager.textures.get(path)
+        else:
+            img = pygame.image.load(path)
+            TextureManager.textures[path] = img
+            return img
 
 class GameObject(ABC):
     def __init__(self, x: int, y: int, width: int, height: int):
@@ -481,17 +565,19 @@ class Label(GameObject):
 
 # TODO: Create SpriteObject class.
 class CardObject(GameObject):
-    def __init__(self, x: int, y: int, card: Card, flipped: bool=True):
+    def __init__(self, x: int, y: int, card: Card, flipped: bool=True, scale: float=1, action=None):
         self._card = card
         self._flipped = flipped
-        self._cardImg = pygame.image.load(self.card.filename)
-        self._cardBack = pygame.image.load("./assets/card_back.png")
+        self._cardImg = TextureManager.load(self.card.filename)
+        self._cardBack = TextureManager.load("./assets/card_back.png")
         self._flipping = False
         self._shouldFlip = False
         self._flipX = 0
         self._deal = False
+        self._scale = scale
+        self._action = action
         w, h = self._cardImg.get_rect().size
-        GameObject.__init__(self, x, y, w, h)
+        GameObject.__init__(self, x, y, int(w*scale), int(h*scale))
     
     @property
     def card(self) -> int:
@@ -528,6 +614,11 @@ class CardObject(GameObject):
         self._dealX = self.x
         self._dealY = self.y
 
+    def handle(self, event):
+        if (self._action != None and event.type == pygame.MOUSEBUTTONDOWN and 
+                Rect(self.x, self.y, self.width, self.height).collidepoint(pygame.mouse.get_pos())):
+            self._action(self._card)
+
     def draw(self, canvas):
         if self._deal:
             if (self._dealX == self._targetX and self._dealY == self._targetY):
@@ -537,29 +628,32 @@ class CardObject(GameObject):
             else:
                 self._dealX += (self._targetX-self._x)/10
                 self._dealY += (self._targetY-self._y)/10
-                canvas.blit(self.cardBack, (self._dealX, self._dealY))
+                self.draw_img(canvas, self.cardBack, (self._dealX, self._dealY))
                 return
         if self.flipping:
-            if (self.flipX >= self.cardImg.get_width()):
+            if (self.flipX >= self.width):
                 self._flipped = not(self._flipped)
                 self._flipX = 0
                 self._flipping = False
-            elif (2*self.flipX >= self.cardImg.get_width()):
+            elif (2*self.flipX >= self.width):
                 img = self.cardBack if self.flipped else self.cardImg
-                img = pygame.transform.scale(img, (img.get_width()-2*(img.get_width() - self.flipX), img.get_height()))
-                canvas.blit(img, (self.x + (self.cardImg.get_width() - self.flipX), self.y))
+                img = pygame.transform.scale(img, (self.width-2*(self.width - self.flipX), self.height))
+                canvas.blit(img, (self.x + (self.width - self.flipX), self.y))
                 self._flipX = self.flipX + 10
                 return
             else:
                 img = self.cardImg if self.flipped else self.cardBack
-                img = pygame.transform.scale(img, (img.get_width()-2*self.flipX, img.get_height()))
+                img = pygame.transform.scale(img, (self.width-2*self.flipX, self.height))
                 canvas.blit(img, (self.x + self.flipX, self.y))
                 self._flipX = self.flipX + 10
                 return
         if self.flipped:
-            canvas.blit(self.cardImg, (self.x, self.y))
+            self.draw_img(canvas, self.cardImg, (self.x, self.y))
         else:
-            canvas.blit(self.cardBack, (self.x, self.y))
+            self.draw_img(canvas, self.cardBack, (self.x, self.y))
+    
+    def draw_img(self, canvas, img, xy):
+        canvas.blit(pygame.transform.scale(img, (self.width, self.height)), xy)
 
 
 class Button(GameObject):
