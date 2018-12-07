@@ -49,7 +49,7 @@ class GameScreen(Screen):
         self._game = Game(settings.game_decks, settings.player_name, settings.player_bankroll)
         self.game.deal()
         self._cards = []
-        self._background = pygame.image.load("./assets/felt.png")
+        self._background = TextureManager.load(settings.background)
         self._stage = 0
         self._bankroll = Button(100, 500, height=50, text="Bankroll: ", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
         payoffTexts = ["Payouts", "-------"] + ["%s: %d" % (str(k), v) for k,v in Hand.payouts.items() if k not in [HandType.high, HandType.pair]]
@@ -150,7 +150,7 @@ class GameScreen(Screen):
     def clear(self):
         if (self._stage == 0):
             self._pull = None
-            self._action._text = "Make 1$ Bet"
+            self._action.text = "Make 1$ Bet"
             self._cards = []
             self._winning = None
             self._statistics = None
@@ -210,26 +210,29 @@ class GameScreen(Screen):
 class CardSelectorScreen(Screen):
     
     def __init__(self, game: GameScreen):
-        self._title = Label(500, 50, "Select Card 1", font_size=50)
-        self._back = Button(200, 50, "Back", action=self.back)
+        self._title = Label(460, 40, "Select Card 1", font_size=50, color=Colors.white)
+        self._back = Button(40, 40, "Back", height=50, width=200, action=self.back)
         deck = Deck().cards
         deck.sort(key=(lambda x: (x.Suit.value, x.rank)))
-        self._cards = [CardObject(10+91*(i%13),100+130*(i//13),card,scale=0.7,action=(lambda x: self.action(x))) for i, card in enumerate(deck)]
+        self._cards = [CardObject(5+91*(i%13),100+130*(i//13),card,scale=0.7,action=(lambda x: self.action(x))) for i, card in enumerate(deck)]
         self._selected = []
         self._next_screen = self
         self._game_screen = game
+        self._background = game._background
 
     def action(self, card):
         if (card in self._selected):
             self._selected.remove(card)
-        else:
+        elif (len(self._selected) < 5):
             self._selected.append(card)
-        if (len(self._selected) < 5):
-            self._title = Label(500, 50, "Select Card " + str(len(self._selected) + 1), font_size=50)
-            if (len(self._selected) == 0):
-                self._back.text = "Back"
-            else:
-                self._back.text = "Save cards"
+        if (len(self._selected) >= 5):
+           self._title.text = "Click Save Cards"
+        else:
+           self._title.text = "Select Card " + str(len(self._selected) + 1)
+        if (len(self._selected) == 0):
+            self._back.text = "Back"
+        else:
+            self._back.text = "Save cards"
 
     def back(self):
         if len(self._selected) > 0:
@@ -255,10 +258,11 @@ class CardSelectorScreen(Screen):
 
     def draw(self, canvas):
         canvas.fill(Colors.white)
+        canvas.blit(self._background, (0,0))
         for card in self._cards:
             card.draw(canvas)
             if card.card in self._selected:
-                pygame.draw.rect(canvas, Color(100, 255, 255, 2), Rect(card.x-1, card.y-1, card.width+2, card.height+2), 4)
+                pygame.draw.rect(canvas, Color(100, 200, 255, 2), Rect(card.x-1, card.y-1, card.width+2, card.height+2), 4)
         self._title.draw(canvas)
         self._back.draw(canvas)
 
@@ -281,6 +285,7 @@ class MainMenu(Screen):
 		]
         TextureManager.load("./assets/card_back.png")
         [TextureManager.load(card.filename) for card in Deck().cards]
+        [TextureManager.load("./assets/felt" + str(num) + ".png") for num in range(1,6)]
 
     def _to_game(self):
         self._next_screen = GameScreen(self._settings)
@@ -324,10 +329,10 @@ class SettingsScreen(Screen):
             self._player_money,
             Label(200, 270, "Decks: ", font_size=36),
             self._game_decks,
-            Button(480, 600, width=240, color=Colors.white, text="Back", action=(lambda: self.gather_settings()))
+            Button(480, 600, width=240, color=Colors.white, text="Back", action=(lambda: self.gather_settings())),
         ]
         self._next_screen = self
-        self._background = pygame.image.load("./assets/felt.png")
+        self._background = TextureManager.load("./assets/felt1.png")
 
     def gather_settings(self):
         if (self._warning.text == None):
