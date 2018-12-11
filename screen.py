@@ -36,6 +36,7 @@ class Screen(ABC):
 
 class GameScreen(Screen):
     def __init__(self, settings: Settings):
+        CardObject.CARD_BACK = settings.card
         self._action = Button(300, 500, width=128, height=50, text="Make $1 Bet", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.action))
         self._pull = None
@@ -274,6 +275,7 @@ class MainMenu(Screen):
     LOADED = False
 
     def __init__(self, settings=Settings()):
+        CardObject.CARD_BACK = settings.card
         self._next_screen = self
         self._settings = settings
         self._buttons2 = [
@@ -287,7 +289,7 @@ class MainMenu(Screen):
 		    Label(50, 50, "Let It Ride Poker", font_size = 64),
 		]
         if not MainMenu.LOADED:
-            TextureManager.load("./assets/card_back.png")
+            [TextureManager.load("./assets/card_back" + str(i) + ".png") for i in range(1,6)]
             [TextureManager.load(card.filename) for card in Deck().cards]
             MainMenu.LOADED=True
 
@@ -321,6 +323,7 @@ class MainMenu(Screen):
 class SettingsScreen(Screen):
 
     def __init__(self, settings: Settings=Settings()):
+        CardObject.CARD_BACK = settings.card
         self._player_name = TextBox(350, 150, 600, 40, text=settings.player_name, placeholder_text="Name...", font_size=30)
         self._player_money = TextBox(350, 210, 600, 40, text=str(settings.player_bankroll), placeholder_text="Money...", font_size=30)
         self._game_decks = TextBox(350, 270, 600, 40, text=str(settings.game_decks), placeholder_text="Decks...", font_size=30)
@@ -331,6 +334,12 @@ class SettingsScreen(Screen):
             sprite = SpriteObject(400 + i*100, 350, background, scale=0.08, action=(lambda s: self.set_background(s.background)))
             sprite.background = background
             self._backgrounds.append(sprite)
+        self._cards = []
+        for i in range(0,5):
+            card = "./assets/card_back" + str(i+1) + ".png"
+            sprite = SpriteObject(405 + i*100, 450, card, scale=0.7, action=(lambda s: self.set_card(s.card)))
+            sprite.card = card
+            self._cards.append(sprite)
         self._components = [
             Label(480, 20, "Settings", font_size=64, font_name="Impact"),
             Label(200, 150, "Player: ", font_size=36),
@@ -340,18 +349,23 @@ class SettingsScreen(Screen):
             Label(200, 270, "Decks: ", font_size=36),
             self._game_decks,
             Button(480, 600, width=240, color=Colors.white, text="Back", action=(lambda: self.gather_settings())),
-            Label(200, 350, "Background: ", font_size=36)
-        ] + self._backgrounds
+            Label(200, 350, "Background: ", font_size=36),
+            Label(200, 450, "Card Back:", font_size=36)
+        ] + self._backgrounds + self._cards
         self.set_background(settings.background)
+        self._card = settings.card
         self._next_screen = self
 
     def set_background(self, background):
         self._selected_background = background
         self._background = TextureManager.load(self._selected_background)
 
+    def set_card(self, card):
+        self._card = card
+
     def gather_settings(self):
         if (self._warning.text == None):
-            self._next_screen = MainMenu(Settings(self._player_name.text, int(self._player_money.text), int(self._game_decks.text), self._selected_background))
+            self._next_screen = MainMenu(Settings(self._player_name.text, int(self._player_money.text), int(self._game_decks.text), self._selected_background, self._card))
 
     def handle(self, event: Event):
         [component.handle(event) for component in self._components]
@@ -369,6 +383,12 @@ class SettingsScreen(Screen):
         canvas.blit(self._background, (0,0))
         pygame.draw.rect(canvas, Color(180, 180, 180, 0), Rect(150, 0, 900, 675))
         [component.draw(canvas) for component in self._components]
+        for cardSprite in self._cards:
+            if (cardSprite.card == self._card):
+                border = 4
+                pygame.draw.rect(canvas, Color(100, 200, 255, 0), 
+                    Rect(cardSprite.x-border, cardSprite.y-border, cardSprite.width+2*border, cardSprite.height+2*border), border)
+                break
         if (self._warning.text != None):
             self._warning.draw(canvas)
 

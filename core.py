@@ -252,11 +252,12 @@ class Game:
         self.player.hand = Hand([self._deck.draw() for _ in range(5)])
 
 class Settings:
-    def __init__(self, player_name: str="Player", player_bankroll: int=1000, game_decks: int=1, background: str="./assets/felt5.png"):
+    def __init__(self, player_name: str="Player", player_bankroll: int=1000, game_decks: int=1, background: str="./assets/felt5.png", card: str="./assets/card_back1.png"):
         self._player_name = player_name
         self._player_bankroll = player_bankroll
         self._game_decks = game_decks
         self._background = background
+        self._card = card
     
     @property
     def player_name(self):
@@ -273,6 +274,10 @@ class Settings:
     @property
     def background(self):
         return self._background
+
+    @property
+    def card(self):
+        return self._card
     
 class Player:
     """
