@@ -270,6 +270,9 @@ class CardSelectorScreen(Screen):
         return self._next_screen
 
 class MainMenu(Screen):
+
+    LOADED = False
+
     def __init__(self, settings=Settings()):
         self._next_screen = self
         self._settings = settings
@@ -283,9 +286,10 @@ class MainMenu(Screen):
         self._labels = [
 		    Label(50, 50, "Let It Ride Poker", font_size = 64),
 		]
-        TextureManager.load("./assets/card_back.png")
-        [TextureManager.load(card.filename) for card in Deck().cards]
-        [TextureManager.load("./assets/felt" + str(num) + ".png") for num in range(1,6)]
+        if not MainMenu.LOADED:
+            TextureManager.load("./assets/card_back.png")
+            [TextureManager.load(card.filename) for card in Deck().cards]
+            MainMenu.LOADED=True
 
     def _to_game(self):
         self._next_screen = GameScreen(self._settings)
@@ -321,6 +325,12 @@ class SettingsScreen(Screen):
         self._player_money = TextBox(350, 210, 600, 40, text=str(settings.player_bankroll), placeholder_text="Money...", font_size=30)
         self._game_decks = TextBox(350, 270, 600, 40, text=str(settings.game_decks), placeholder_text="Decks...", font_size=30)
         self._warning = Button(380, 600, width=440, color=Color(220, 100, 100, 1), text=None)
+        self._backgrounds = []
+        for i in range(0,5):
+            background = "./assets/felt" + str(i+1) + ".png"
+            sprite = SpriteObject(400 + i*100, 350, background, scale=0.08, action=(lambda s: self.set_background(s.background)))
+            sprite.background = background
+            self._backgrounds.append(sprite)
         self._components = [
             Label(480, 20, "Settings", font_size=64, font_name="Impact"),
             Label(200, 150, "Player: ", font_size=36),
@@ -330,13 +340,18 @@ class SettingsScreen(Screen):
             Label(200, 270, "Decks: ", font_size=36),
             self._game_decks,
             Button(480, 600, width=240, color=Colors.white, text="Back", action=(lambda: self.gather_settings())),
-        ]
+            Label(200, 350, "Background: ", font_size=36)
+        ] + self._backgrounds
+        self.set_background(settings.background)
         self._next_screen = self
-        self._background = TextureManager.load("./assets/felt1.png")
+
+    def set_background(self, background):
+        self._selected_background = background
+        self._background = TextureManager.load(self._selected_background)
 
     def gather_settings(self):
         if (self._warning.text == None):
-            self._next_screen = MainMenu(Settings(self._player_name.text, int(self._player_money.text), int(self._game_decks.text)))
+            self._next_screen = MainMenu(Settings(self._player_name.text, int(self._player_money.text), int(self._game_decks.text), self._selected_background))
 
     def handle(self, event: Event):
         [component.handle(event) for component in self._components]
@@ -598,7 +613,7 @@ class SpriteObject(GameObject):
     def handle(self, event):
         if (self.action != None and event.type == pygame.MOUSEBUTTONDOWN and 
                 Rect(self.x, self.y, self.width, self.height).collidepoint(pygame.mouse.get_pos())):
-            self.action()
+            self.action(self)
 
 class CardObject(SpriteObject):
     CARD_BACK = "./assets/card_back.png"
@@ -617,7 +632,7 @@ class CardObject(SpriteObject):
 
     @property
     def action(self):
-        return (lambda: self._action(self._card))
+        return (lambda s: s._action(s._card))
 
     def flip(self):
         self._flipping = True
