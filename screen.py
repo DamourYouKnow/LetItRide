@@ -565,99 +565,99 @@ class Label(GameObject):
         textSurface = self.font.render(self.text, False, self.color)
         canvas.blit(textSurface, (self.x, self.y))
 
+class SpriteObject(GameObject):
+    def __init__(self, x: int, y: int, sprite: str, scale: float=1, action=None):
+        self._scale = scale
+        self._action = action
+        self.sprite = sprite
+        w,h= self.sprite.get_rect().size
+        GameObject.__init__(self, x, y, w, h)
+    
+    @property
+    def scale(self) -> float:
+        return self._scale
 
-# TODO: Create SpriteObject class.
-class CardObject(GameObject):
+    @property
+    def sprite(self) -> Surface:
+        return self._sprite
+    
+    @sprite.setter
+    def sprite(self, sprite: str):
+        sprite = TextureManager.load(sprite)
+        if (self.scale != 1):
+            sprite = pygame.transform.scale(sprite, (int(sprite.get_width() * self.scale), int(sprite.get_height()*self.scale)))
+        self._sprite = sprite
+
+    @property
+    def action(self):
+        return self._action
+        
+    def draw(self, canvas: Surface):
+        canvas.blit(self.sprite, (self.x, self.y))
+    
+    def handle(self, event):
+        if (self.action != None and event.type == pygame.MOUSEBUTTONDOWN and 
+                Rect(self.x, self.y, self.width, self.height).collidepoint(pygame.mouse.get_pos())):
+            self.action()
+
+class CardObject(SpriteObject):
+    CARD_BACK = "./assets/card_back.png"
+
     def __init__(self, x: int, y: int, card: Card, flipped: bool=True, scale: float=1, action=None):
         self._card = card
         self._flipped = flipped
-        self._cardImg = TextureManager.load(self.card.filename)
-        self._cardBack = TextureManager.load("./assets/card_back.png")
         self._flipping = False
-        self._shouldFlip = False
-        self._flipX = 0
-        self._deal = False
-        self._scale = scale
-        self._action = action
-        w, h = self._cardImg.get_rect().size
-        GameObject.__init__(self, x, y, int(w*scale), int(h*scale))
+        self._dealing = False
+        sprite = card.filename if flipped else CardObject.CARD_BACK
+        SpriteObject.__init__(self, x, y, sprite, scale, action)
     
     @property
-    def card(self) -> int:
+    def card(self):
         return self._card
-    
-    @property
-    def cardImg(self):
-        return self._cardImg
-    
-    @property
-    def cardBack(self):
-        return self._cardBack
 
     @property
-    def flipped(self) -> bool:
-        return self._flipped
-
-    @property
-    def flipping(self) -> bool:
-        return self._flipping
-    
-    @property
-    def flipX(self) -> int:
-        return self._flipX
+    def action(self):
+        return (lambda: self._action(self._card))
 
     def flip(self):
         self._flipping = True
         self._flipX = 0
     
     def deal(self, targetX, targetY):
-        self._deal = True
+        self._dealing = True
         self._targetX = targetX
         self._targetY = targetY
         self._dealX = self.x
         self._dealY = self.y
-
-    def handle(self, event):
-        if (self._action != None and event.type == pygame.MOUSEBUTTONDOWN and 
-                Rect(self.x, self.y, self.width, self.height).collidepoint(pygame.mouse.get_pos())):
-            self._action(self._card)
-
-    def draw(self, canvas):
-        if self._deal:
+    
+    def draw(self, canvas: Surface):
+        if self._dealing:
             if (self._dealX == self._targetX and self._dealY == self._targetY):
-                self._deal = False
+                self._dealing = False
                 self._x = self._targetX
                 self._y = self._targetY
             else:
                 self._dealX += (self._targetX-self._x)/10
                 self._dealY += (self._targetY-self._y)/10
-                self.draw_img(canvas, self.cardBack, (self._dealX, self._dealY))
-                return
-        if self.flipping:
-            if (self.flipX >= self.width):
+                canvas.blit(self.sprite, (self._dealX, self._dealY))
+        elif self._flipping:
+            if (self._flipX >= self.width):
                 self._flipped = not(self._flipped)
                 self._flipX = 0
                 self._flipping = False
-            elif (2*self.flipX >= self.width):
-                img = self.cardBack if self.flipped else self.cardImg
-                img = pygame.transform.scale(img, (self.width-2*(self.width - self.flipX), self.height))
-                canvas.blit(img, (self.x + (self.width - self.flipX), self.y))
-                self._flipX = self.flipX + 10
-                return
+                canvas.blit(self.sprite, (self.x, self.y))
+            elif (2*self._flipX >= self.width):
+                img = pygame.transform.scale(self.sprite, (self.width-2*(self.width - self._flipX), self.height))
+                canvas.blit(img, (self.x + (self.width - self._flipX), self.y))
+                self._flipX = self._flipX + 10
             else:
-                img = self.cardImg if self.flipped else self.cardBack
-                img = pygame.transform.scale(img, (self.width-2*self.flipX, self.height))
-                canvas.blit(img, (self.x + self.flipX, self.y))
-                self._flipX = self.flipX + 10
-                return
-        if self.flipped:
-            self.draw_img(canvas, self.cardImg, (self.x, self.y))
+                img = pygame.transform.scale(self.sprite, (self.width-2*self._flipX, self.height))
+                canvas.blit(img, (self.x + self._flipX, self.y))
+                self._flipX = self._flipX + 10
+                if (2*self._flipX >= self.width):
+                    self.sprite = CardObject.CARD_BACK if self._flipped else self.card.filename
         else:
-            self.draw_img(canvas, self.cardBack, (self.x, self.y))
-    
-    def draw_img(self, canvas, img, xy):
-        canvas.blit(pygame.transform.scale(img, (self.width, self.height)), xy)
-
+            canvas.blit(self.sprite, (self.x, self.y))
 
 class Button(GameObject):
     def __init__(
