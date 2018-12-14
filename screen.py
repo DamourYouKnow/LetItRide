@@ -8,12 +8,7 @@ from core import *
 from enum import Enum
 from typing import Tuple
 
-class Colors:
-    light_gray = Color(200, 200, 200, 1)
-    gray = Color(150, 150, 150, 1)
-    white = Color(255, 255, 255, 1)
-    black = Color(0, 0, 0, 1)
-    green = Color(0, 128, 100, 1)
+from engine import GameObject, GameComponent, Sprite, Click, Colors
 
 
 class Screen(ABC):
@@ -88,12 +83,7 @@ class GameScreen(Screen):
         
     def action(self, pull=False):
         if (self._stage == 0):
-        
-        
-            
-                
-        
-        
+
             self._game.deal()
             self._game.player.bet(1)
             for bet in self._bets:
@@ -427,72 +417,6 @@ class SettingsScreen(Screen):
     def next(self):
         return self._next_screen
 
-class TextureManager:
-    textures = dict()
-
-    def save(path, img):
-        TextureManager.textures[path] = img
-
-    def load(path: str) -> Surface:
-        if (path in TextureManager.textures):
-            return TextureManager.textures.get(path)
-        else:
-            img = pygame.image.load(path)
-            TextureManager.textures[path] = img
-            return img
-
-class GameObject(ABC):
-    def __init__(self, x: int, y: int, width: int, height: int):
-        self._x = x
-        self._y = y
-        self._width = width
-        self._height = height
-
-    @property
-    def x(self) -> int:
-        return self._x
-
-    @property
-    def y(self) -> int:
-        return self._y
-
-    @property
-    def pos(self) -> Tuple[int, int]:
-        return (self._x, self._y)
-
-    @pos.setter
-    def pos(self, value: Tuple[int, int]):
-        self._x, self._y = value
-
-    @property
-    def width(self) -> int:
-        return self._width
-
-    @property
-    def height(self) -> int:
-        return self._height
-
-    @property
-    def size(self) -> Tuple[int, int]:
-        return (self._width, self._height)
-
-    @size.setter
-    def size(self, value: Tuple[int, int]):
-        self._width, self._height = value
-
-    @property
-    def rect(self) -> Rect:
-        return Rect(self._x, self._y, self._width, self._height)
-
-    def move(self, x: int, y: int):
-        self.pos = (x, y)
-
-    def handle(self, event: Event):
-        pass
-
-    @abstractmethod
-    def draw(self, canvas: Surface):
-        raise NotImplementedError()
 
 class TextBox(GameObject):
     def __init__(
@@ -632,40 +556,6 @@ class Label(GameObject):
         textSurface = self.font.render(self.text, False, self.color)
         canvas.blit(textSurface, (self.x, self.y))
 
-class SpriteObject(GameObject):
-    def __init__(self, x: int, y: int, sprite: str, scale: float=1, action=None):
-        self._scale = scale
-        self._action = action
-        self.sprite = sprite
-        w,h= self.sprite.get_rect().size
-        GameObject.__init__(self, x, y, w, h)
-    
-    @property
-    def scale(self) -> float:
-        return self._scale
-
-    @property
-    def sprite(self) -> Surface:
-        return self._sprite
-    
-    @sprite.setter
-    def sprite(self, sprite: str):
-        sprite = TextureManager.load(sprite)
-        if (self.scale != 1):
-            sprite = pygame.transform.scale(sprite, (int(sprite.get_width() * self.scale), int(sprite.get_height()*self.scale)))
-        self._sprite = sprite
-
-    @property
-    def action(self):
-        return self._action
-        
-    def draw(self, canvas: Surface):
-        canvas.blit(self.sprite, (self.x, self.y))
-    
-    def handle(self, event):
-        if (self.action != None and event.type == pygame.MOUSEBUTTONDOWN and 
-                Rect(self.x, self.y, self.width, self.height).collidepoint(pygame.mouse.get_pos())):
-            self.action(self)
 
 class CardObject(SpriteObject):
     CARD_BACK = "./assets/card_back.png"
