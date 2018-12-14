@@ -220,7 +220,7 @@ class GameScreen(Screen):
 
     def update(self):
         self._bankroll.text = "Bankroll: " + str(self.game.player.money)
-        if (self._autoplay and len([card for card in self.cards if card._deal or card._flipping]) == 0):
+        if (self._autoplay and len([card for card in self.cards if card._dealing or card._flipping]) == 0):
             if (self._stage == 1 or self._stage == 2):
                 self.action(not(self._shouldRide))
             else:
