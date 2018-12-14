@@ -312,7 +312,12 @@ class Game:
         self.player.hand = Hand([self._deck.draw() for _ in range(5)])
 
 class Settings:
-    def __init__(self, player_name: str="Player", player_bankroll: int=1000, game_decks: int=1, background: str="./assets/felt5.png", card: str="./assets/card_back1.png"):
+    def __init__(
+            self, 
+            player_name: str="Player", player_bankroll: int=1000, 
+            game_decks: int=1, 
+            background: str="./assets/felt5.png", 
+            card: str="./assets/card_back1.png"):
         self._player_name = player_name
         self._player_bankroll = player_bankroll
         self._game_decks = game_decks
@@ -399,14 +404,18 @@ class Player:
         self._money += self._hand.payout(self._full_bet)
 
 class Statistics:
-
+    @staticmethod
     def shouldRide(cards, expectedValue = None):
-        ev = expectedValue if expectedValue != None else Statistics.expectedValue(cards)
+        if not expectedValue:
+            expectedValue = Statistics.expectedValue(cards)
         return expectedValue >= 0
 
+    @staticmethod
     def expectedValue(cards, probabilityDistribution = None):
         choose = 5-len(cards)
-        results = probabilityDistribution if probabilityDistribution != None else Statistics.probabilityDistribution(cards)
+        results = probabilityDistribution 
+        if not probabilityDistribution:
+            results = Statistics.probabilityDistribution(cards)
         possibilities = Statistics.choose(52-5+choose, choose)
         ev = 0
         for k,v in results.items():
@@ -416,6 +425,7 @@ class Statistics:
                 ev -= v/possibilities
         return ev
 
+    @staticmethod
     def probabilityDistribution(cards):
         choose = 5-len(cards)
         results = dict()
@@ -432,6 +442,7 @@ class Statistics:
             results[hand.type] += 1
         return results
 
+    @staticmethod
     def choose(n,k):
         if k<0 or n<k:
             return 0
