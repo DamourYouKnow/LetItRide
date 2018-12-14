@@ -42,7 +42,14 @@ class HandType(Enum):
 	
 	#leave this here for now 
     mini_royal= 12
-
+    three_of_kind_side= 13
+    flush_side=14
+    straight_flush_side=15
+    straight_side = 16
+    pair_side = 17
+    high_side = 18
+    
+    
     def __str__(self) -> str:
         strings = {
             HandType.royal_flush: "Royal Flush",
@@ -59,7 +66,14 @@ class HandType(Enum):
 			
 			
 			#sidebet strings 
-            HandType.mini_royal: "Mini Royal"
+            HandType.mini_royal: "Mini Royal",
+            HandType.three_of_kind_side: "Three of a Kind",
+            HandType.straight_flush_side: "Straight Flush",
+            HandType.flush_side: "Flush",
+            HandType.straight_side: "Straight",
+            HandType.pair_side: "Pair",
+            HandType.high_side: "Nothing"
+           
             
 			
         }
@@ -128,11 +142,11 @@ class Hand:
     }
     sidePayouts = {
         HandType.mini_royal: 50,
-        HandType.straight_flush: 40,
-        HandType.three_of_kind: 30,
-        HandType.straight: 6,
-        HandType.flush: 3,
-        HandType.pair: 1
+        HandType.straight_flush_side: 40,
+        HandType.three_of_kind_side: 30,
+        HandType.straight_side: 6,
+        HandType.flush_side: 3,
+        HandType.pair_side: 1
         }
 
     def __init__(self, cards: List[Card]=[]):
@@ -156,11 +170,57 @@ class Hand:
         return 0
 
     @property
+    def type_side(self) -> HandType:
+        hand = self._cards.copy()
+        del hand[4]
+        del hand[3]
+        hand.sort()
+        size=3
+        #size = len(hand)
+
+        royals = [11, 12, 13]
+        ranks = [card.rank for card in hand]
+        is_royal = all([r in ranks for r in royals])
+        is_straight = ranks == list(range(ranks[0], ranks[-1] + 1)) or is_royal
+        is_flush = len([c for c in hand if c.Suit == hand[0].Suit]) == size
+
+        if is_royal and is_flush:
+            return HandType.mini_royal
+        if is_straight and is_flush:
+            return HandType.straight_flush
+        if is_straight:
+            return HandType.straight
+        if is_flush:
+            return HandType.flush
+
+        count_map = {
+            c.rank: len([c2 for c2 in hand if c2.rank == c.rank]) for c in hand
+        }
+        counts = list(count_map.values())
+
+        #if counts.count(4) == 1:
+         #   return HandType.four_of_kind
+        #if counts.count(3) == 1 and counts.count(2) == 1:
+          #  return HandType.full_house
+        if counts.count(3) == 1:
+            return HandType.three_of_kind
+        #if counts.count(2) == 2:
+         #   return HandType.two_pair
+        if counts.count(2) == 1:
+            #if [c for c in hand if c.rank in royals and count_map[c.rank] == 2]:
+            return HandType.pair_side
+            #else:
+             #   return HandType.pair
+
+        return HandType.high_side
+        
+    
+    @property
     def type(self) -> HandType:
         hand = self._cards.copy()
         hand.sort()
         size = len(hand)
-
+            
         royals = [1, 10, 11, 12, 13]
         ranks = [card.rank for card in hand]
         is_royal = all([r in ranks for r in royals])
@@ -290,6 +350,7 @@ class Player:
         self._full_bet = 0
         self._portion_bet = 0
         self._hand = None
+        
 
     @property
     def name(self) -> str:

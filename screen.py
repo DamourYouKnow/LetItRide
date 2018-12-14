@@ -39,8 +39,10 @@ class GameScreen(Screen):
         CardObject.CARD_BACK = settings.card
         self._action = Button(300, 500, width=128, height=50, text="Make $1 Bet", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.action))
+        
         self._pull = None
         self._winning = None
+        self._winning_side = None
         self._autoplay_button = Button(700, 250, width=128, height=40, text="Autoplay On", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.autoplay))
         self._card_selector_button = Button(700, 300, width=128, height=40, text="Card Selector", color=Colors.light_gray, down_color=Colors.gray,
@@ -53,6 +55,10 @@ class GameScreen(Screen):
         self._background = TextureManager.load(settings.background)
         self._stage = 0
         self._bankroll = Button(100, 500, height=50, text="Bankroll: ", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
+        self._side = Button(700, 400, width=128, height=40, text="Side Bet:OFF", color=Colors.light_gray, down_color=Colors.gray,
+            action=(self.side))
+        self._side_state=False
+        
         payoffTexts = ["Payouts", "-------"] + ["%s: %d" % (str(k), v) for k,v in Hand.payouts.items() if k not in [HandType.high, HandType.pair]]
         self._payoffs = TextArea(900, 50, payoffTexts, width=200, background_color=Color(255, 255, 255, 255))
         payoffSideTexts = ["Sidebet Payouts", "---------------"] + ["%s: %d" % (str(z), x) for z,x in Hand.sidePayouts.items() if z not in [HandType.high, HandType.pair]]
@@ -72,9 +78,22 @@ class GameScreen(Screen):
             Button(310, 430, None, width=80, height=30),
             Button(410, 430, None, width=80, height=30)
         ]
-		
+    def side(self):
+        if (self._side_state ==False):
+            self._side_state = True
+            self._side.text="Side Bet: ON"
+        else:
+            self._side_state = False
+            self._side.text="Side Bet: OFF"
+        
     def action(self, pull=False):
         if (self._stage == 0):
+        
+        
+            
+                
+        
+        
             self._game.deal()
             self._game.player.bet(1)
             for bet in self._bets:
@@ -87,7 +106,15 @@ class GameScreen(Screen):
                 x += 100
 
             [self._cards[i].flip() for i in range(3)]
-
+            
+            if (self._side_state==True):
+                #self._game.player.payout()
+                #payout = self._game.player.hand.payout(self._game.player.full_bet)
+                winText_side = str(self.game.player.hand.type_side) + " - Win $"   #+ str(payout)
+                self._winning_side = Button(250, 80, width=228, height=50, text=winText_side, color=Colors.white, 
+                    down_color=Colors.white, padding=5, border_color=Colors.black)
+            
+            
             self._stage = 1
             self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 1", color=Colors.light_gray, down_color=Colors.gray,
             action=(lambda: self.action(True)))
@@ -154,6 +181,7 @@ class GameScreen(Screen):
             self._action.text = "Make 1$ Bet"
             self._cards = []
             self._winning = None
+            self._winning_side = None
             self._statistics = None
             for bet in self._bets:
                 bet.text = None
@@ -169,6 +197,7 @@ class GameScreen(Screen):
     def handle(self, event: Event):
         self._action.handle(event)
         self._autoplay_button.handle(event)
+        self._side.handle(event)
         if (self._stage == 0):
             self._card_selector_button.handle(event)
         self._main_menu.handle(event)
@@ -188,6 +217,7 @@ class GameScreen(Screen):
         canvas.blit(self._background, (0,0))
         self._action.draw(canvas)
         self._bankroll.draw(canvas)
+        self._side.draw(canvas)
         self._deck.draw(canvas)
         self._payoffs.draw(canvas)
         self._payoffs_side.draw(canvas)
@@ -201,6 +231,8 @@ class GameScreen(Screen):
             self._pull.draw(canvas)
         if self._winning:
             self._winning.draw(canvas)
+        if self._winning_side:
+            self._winning_side.draw(canvas)
         [card.draw(canvas) for card in self.cards]
         [bet.draw(canvas) for bet in self._bet_labels]
         [bet.draw(canvas) for bet in self._bets if bet.text]
