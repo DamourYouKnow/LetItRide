@@ -680,7 +680,10 @@ class SpriteObject(GameObject):
     def handle(self, event):
         if (self.action != None and event.type == pygame.MOUSEBUTTONDOWN and 
                 Rect(self.x, self.y, self.width, self.height).collidepoint(pygame.mouse.get_pos())):
-            self.action()
+            try:
+                self.action(self)
+            except:
+                self.action()
 
 class CardObject(SpriteObject):
     CARD_BACK = "./assets/card_back.png"
