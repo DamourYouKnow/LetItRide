@@ -37,7 +37,7 @@ class Screen(ABC):
 class GameScreen(Screen):
     def __init__(self, settings: Settings):
         CardObject.CARD_BACK = settings.card
-        self._action = Button(300, 500, width=128, height=50, text="Make $1 Bet", color=Colors.light_gray, down_color=Colors.gray,
+        self._action = Button(300, 500, width=128, height=50, text="Make $0 Bet", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.action))
         
         self._pull = None
@@ -67,6 +67,16 @@ class GameScreen(Screen):
         self._autoplay = False
         self._next_screen = self
 
+        self._bet_pool = 0
+        self._bet_buttons = [
+            SpriteObject(100, 575, "./assets/chip-1.png", scale=0.8, action=(lambda: self.add_bet(1))),
+            SpriteObject(175, 575, "./assets/chip-5.png", scale=0.8, action=(lambda: self.add_bet(5))),
+            SpriteObject(250, 575, "./assets/chip-10.png", scale=0.8, action=(lambda: self.add_bet(10))),
+            SpriteObject(325, 575, "./assets/chip-20.png", scale=0.8, action=(lambda: self.add_bet(20))),
+            SpriteObject(400, 575, "./assets/chip-50.png", scale=0.8, action=(lambda: self.add_bet(50))),
+            SpriteObject(475, 575, "./assets/chip-100.png", scale=0.8, action=(lambda: self.add_bet(100)))
+        ]
+
         self._deck = CardObject(700, 50, Card(1, Suit.clubs), False)
         self._bet_labels = [
             Button(210, 400, "$", width=80, height=30),
@@ -78,6 +88,12 @@ class GameScreen(Screen):
             Button(310, 430, None, width=80, height=30),
             Button(410, 430, None, width=80, height=30)
         ]
+
+    def add_bet(self, amount):
+        if self._stage == 0 and self.game.player.money > self._bet_pool + (amount* 3):
+            self._bet_pool += amount
+            self._action.text = "Make $" + str(self._bet_pool * 3) + " Bet"
+
     def side(self):
         if (self._side_state ==False):
             self._side_state = True
@@ -88,16 +104,13 @@ class GameScreen(Screen):
         
     def action(self, pull=False):
         if (self._stage == 0):
-        
-        
-            
-                
-        
+            if self._bet_pool == 0:
+                return
         
             self._game.deal()
-            self._game.player.bet(1)
+            self._game.player.bet(self._bet_pool)
             for bet in self._bets:
-                bet.text = "$" + str(1)
+                bet.text = "$" + str(self._bet_pool)
             self._cards = [CardObject(700, 50, c, False) for c in self.game.player.hand]
 
             x = 100
@@ -178,7 +191,7 @@ class GameScreen(Screen):
     def clear(self):
         if (self._stage == 0):
             self._pull = None
-            self._action.text = "Make 1$ Bet"
+            self._action.text = "Make $0 Bet"
             self._cards = []
             self._winning = None
             self._winning_side = None
@@ -200,6 +213,7 @@ class GameScreen(Screen):
         self._side.handle(event)
         if (self._stage == 0):
             self._card_selector_button.handle(event)
+            [chip.handle(event) for chip in self._bet_buttons]
         self._main_menu.handle(event)
         if (self._pull != None):
             self._pull.handle(event)
@@ -233,6 +247,7 @@ class GameScreen(Screen):
             self._winning.draw(canvas)
         if self._winning_side:
             self._winning_side.draw(canvas)
+        [chip.draw(canvas) for chip in self._bet_buttons]
         [card.draw(canvas) for card in self.cards]
         [bet.draw(canvas) for bet in self._bet_labels]
         [bet.draw(canvas) for bet in self._bets if bet.text]
@@ -665,7 +680,7 @@ class SpriteObject(GameObject):
     def handle(self, event):
         if (self.action != None and event.type == pygame.MOUSEBUTTONDOWN and 
                 Rect(self.x, self.y, self.width, self.height).collidepoint(pygame.mouse.get_pos())):
-            self.action(self)
+            self.action()
 
 class CardObject(SpriteObject):
     CARD_BACK = "./assets/card_back.png"
