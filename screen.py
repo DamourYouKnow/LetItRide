@@ -14,6 +14,8 @@ class Colors:
     white = Color(255, 255, 255, 1)
     black = Color(0, 0, 0, 1)
     green = Color(0, 128, 100, 1)
+    blue_gray = Color(180, 180, 200, 1)
+    dark_blue_gray = Color(120, 120, 140, 1)
 
 
 class Screen(ABC):
@@ -43,10 +45,13 @@ class GameScreen(Screen):
         self._pull = None
         self._winning = None
         self._winning_side = None
-        self._autoplay_button = Button(700, 250, width=128, height=40, text="Autoplay On", color=Colors.light_gray, down_color=Colors.gray,
+        self._autoplay_button = Button(1036, 500, width=128, height=40, text="Autoplay On", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
             action=(self.autoplay))
-        self._card_selector_button = Button(700, 300, width=128, height=40, text="Card Selector", color=Colors.light_gray, down_color=Colors.gray,
+        self._card_selector_button = Button(1036, 550, width=128, height=40, text="Card Selector", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
             action=(self.cardselector))
+        self._statistics_button = Button(1036, 600, width=128, height=40, text="Show Statistics", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+            action=(self.show_statistics))
+        self._show_statistics = False
         self._main_menu = Button(50, 50, width=100, height=50, text="Main Menu", color=Colors.light_gray, down_color=Colors.gray, 
             action=(lambda: self.home(settings)))
         self._game = Game(settings.game_decks, settings.player_name, settings.player_bankroll)
@@ -60,9 +65,9 @@ class GameScreen(Screen):
         self._side_state=False
         
         payoffTexts = ["Payouts", "-------"] + ["%s: %d" % (str(k), v) for k,v in Hand.payouts.items() if k not in [HandType.high, HandType.pair]]
-        self._payoffs = TextArea(900, 50, payoffTexts, width=200, background_color=Color(255, 255, 255, 255))
+        self._payoffs = TextArea(1000, 10, payoffTexts, width=200, background_color=Colors.light_gray)
         payoffSideTexts = ["Sidebet Payouts", "---------------"] + ["%s: %d" % (str(z), x) for z,x in Hand.sidePayouts.items() if z not in [HandType.high, HandType.pair]]
-        self._payoffs_side = TextArea(900, 320, width=200, texts=payoffSideTexts, background_color=Color(255, 255, 255, 255))
+        self._payoffs_side = TextArea(1000, 290, width=200, texts=payoffSideTexts, background_color=Colors.light_gray)
         self._statistics = None
         self._autoplay = False
         self._next_screen = self
@@ -133,7 +138,8 @@ class GameScreen(Screen):
             action=(lambda: self.action(True)))
             self._action.text = "Let it ride"
             self._winning = None
-            self.update_statistics()
+            if (self._show_statistics):
+                self.update_statistics()
         elif (self._stage == 1):
             self._stage = 2
             self._cards[3].flip()    
@@ -142,14 +148,16 @@ class GameScreen(Screen):
                 self._bets[2].text = ""
             self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 2", color=Colors.light_gray, down_color=Colors.gray,
                 action=(lambda: self.action(True)))
-            self.update_statistics()
+            if (self._show_statistics):
+                self.update_statistics()
         elif (self._stage == 2):
             self._stage = 0
             if (pull):
                 self._game.player.pull()
                 self._bets[1].text = ""
             self._cards[4].flip()
-            self.update_statistics()
+            if (self._show_statistics):
+                self.update_statistics()
             self._pull = Button(500, 500, width=128, height=50, text="Clear Bet", color=Colors.light_gray, down_color=Colors.gray,
                 action=(lambda: self.clear()))
             self._game.player.payout()
@@ -160,6 +168,7 @@ class GameScreen(Screen):
             self._action.text = "Repeat Bet"
 
     def home(self, settings):
+        settings.player_bankroll = self._game.player.money
         self._next_screen = MainMenu(settings)
 
     def autoplay(self):
@@ -169,6 +178,15 @@ class GameScreen(Screen):
         else:
             self._autoplay = True
             self._autoplay_button.text = "Autoplay Off"
+
+    def show_statistics(self):
+        self._show_statistics = not self._show_statistics
+        if (self._show_statistics):
+            self._statistics_button.text = "Hide Statistics"
+            self.update_statistics()
+        else:
+            self._statistics_button.text = "Show Statistics"
+            self._statistics = None
 
     def cardselector(self):
         self._next_screen = CardSelectorScreen(self)
@@ -182,11 +200,11 @@ class GameScreen(Screen):
         self._probabilityWin = sum([v for k,v in probabilities.items() if k in Hand.payouts])/Statistics.choose(52-2-self._stage, 3-self._stage)
         self._expectedValue = Statistics.expectedValue(cards, probabilities)
         self._shouldRide = Statistics.shouldRide(cards, self._expectedValue)
-        self._statistics = TextArea(900, 500, [
+        self._statistics = TextArea(795, 605, [
             "Should Ride: " + str(self._shouldRide),
             "Expected Value: " + ("%.3f" % self._expectedValue),
             "Probability Win: " + ("%.3f" % self._probabilityWin)
-        ], width=200, background_color=Color(255, 255, 255, 255))
+        ], width=200, background_color=None,color=Colors.white)
 
     def clear(self):
         if (self._stage == 0):
@@ -210,6 +228,7 @@ class GameScreen(Screen):
     def handle(self, event: Event):
         self._action.handle(event)
         self._autoplay_button.handle(event)
+        self._statistics_button.handle(event)
         self._side.handle(event)
         if (self._stage == 0):
             self._card_selector_button.handle(event)
@@ -229,6 +248,10 @@ class GameScreen(Screen):
     def draw(self, canvas: Surface):
         canvas.fill(Colors.white)
         canvas.blit(self._background, (0,0))
+        pygame.draw.rect(canvas, Colors.light_gray, Rect(1000, 0, 200, 800))
+        pygame.draw.rect(canvas, Colors.gray, Rect(995, 0, 5, 800))
+        pygame.draw.rect(canvas, Colors.gray, Rect(1000, 275, 200, 5))
+        pygame.draw.rect(canvas, Colors.gray, Rect(1000, 485, 200, 5))
         self._action.draw(canvas)
         self._bankroll.draw(canvas)
         self._side.draw(canvas)
@@ -236,6 +259,7 @@ class GameScreen(Screen):
         self._payoffs.draw(canvas)
         self._payoffs_side.draw(canvas)
         self._autoplay_button.draw(canvas)
+        self._statistics_button.draw(canvas)
         self._main_menu.draw(canvas)
         if (self._stage == 0):
             self._card_selector_button.draw(canvas)
