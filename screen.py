@@ -245,6 +245,7 @@ class GameScreen(Screen):
         self._bankroll.text = "Bankroll: " + str(self.game.player.money)
         if (self._autoplay and len([card for card in self.cards if card._dealing or card._flipping]) == 0):
             if (self._stage == 1 or self._stage == 2):
+                self.update_statistics()
                 self.action(not(self._shouldRide))
             else:
                 self.action()
@@ -272,7 +273,7 @@ class GameScreen(Screen):
         self._main_menu.draw(canvas)
         if (self._stage == 0):
             self._card_selector_button.draw(canvas)
-        if (self._statistics):
+        if (self._show_statistics):
             self._statistics.draw(canvas)
         if self._pull:
             self._pull.draw(canvas)
