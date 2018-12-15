@@ -47,13 +47,17 @@ class GameScreen(Screen):
             action=self.clear)
         self._winning = None
         self._winning_side = None
-        self._autoplay_button = Button(1036, 500, width=128, height=40, text="Autoplay On", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+        self._autoplay_button = Button(1020, 480, width=160, height=40, text="Autoplay On", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
             action=(self.autoplay))
-        self._card_selector_button = Button(1036, 550, width=128, height=40, text="Card Selector", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+        self._card_selector_button = Button(1020, 530, width=160, height=40, text="Card Selector", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
             action=(self.cardselector))
-        self._statistics_button = Button(1036, 600, width=128, height=40, text="Show Statistics", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+        self._statistics_button = Button(1020, 580, width=160, height=40, text="Show Statistics", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
             action=(self.show_statistics))
+        self._probability_distribution = Button(1020, 630, width=160, height=40, text="Probability Dist.", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+            action=(self.show_probability))
+        self._probability_exit = Button(810, 90, width=30, height=20, text="x", color=Colors.light_gray, down_color=Colors.gray, action=self.show_probability)
         self._show_statistics = False
+        self._show_probability = False
         self._main_menu = Button(10, 10, width=100, height=50, text="Main Menu", color=Colors.light_gray, down_color=Colors.gray, 
             action=(lambda: self.home(settings)))
         self._game = Game(settings.game_decks, settings.player_name, settings.player_bankroll)
@@ -190,6 +194,11 @@ class GameScreen(Screen):
             self._statistics_button.text = "Show Statistics"
             self._statistics = None
 
+    def show_probability(self):
+        self._show_probability = not self._show_probability
+        if self._show_probability:
+            self.update_statistics()
+
     def cardselector(self):
         self._next_screen = CardSelectorScreen(self)
 
@@ -198,8 +207,9 @@ class GameScreen(Screen):
             cards = self.game.player.hand.cards[0:self._stage + 2]
         else:
             cards = self.game.player.hand.cards
-        probabilities = Statistics.probabilityDistribution(cards)
-        self._probabilityWin = sum([v for k,v in probabilities.items() if k in Hand.payouts])/Statistics.choose(52-2-self._stage, 3-self._stage)
+        deck_count = self._game._deck_count if self._game._deck_count < 10 else math.inf
+        probabilities = Statistics.probabilityDistribution(cards, deck_count)
+        self._probabilityWin = sum([v for k,v in probabilities.items() if k in Hand.payouts])/sum(probabilities.values())
         self._expectedValue = Statistics.expectedValue(cards, probabilities)
         self._shouldRide = Statistics.shouldRide(cards, self._expectedValue)
         self._statistics = TextArea(664, 585, [
@@ -207,6 +217,14 @@ class GameScreen(Screen):
             "Expected Value: " + ("%.3f" % self._expectedValue),
             "Probability Win: " + ("%.3f" % self._probabilityWin)
         ], width=200, background_color=None,color=Colors.white)
+        if (self._show_probability):
+            count = sum(probabilities.values())
+            nothings = sum([value for key, value in probabilities.items() if not (key in Hand.payouts)])
+            texts = [("[" + str(key) + "]").ljust(18) + " # hands=" + str(value) + ", p=" + ("%.3f" % (value/count)) for key, value in probabilities.items() if key in Hand.payouts]
+            texts.append(("[Nothing]").ljust(18) + " # hands=" + str(nothings) + ", p=" + ("%.3f" % (nothings/count)))
+            if (deck_count == math.inf):
+                texts.insert(0, "# decks >= 10, simulating inf. deck")
+            self._probability = TextArea(350, 100, texts, background_color=Colors.white, width=500, centered=False, font_name="Courier")
 
     def clear(self):
         if (self._stage == 0):
@@ -230,9 +248,13 @@ class GameScreen(Screen):
         return self._cards
 
     def handle(self, event: Event):
+        if (self._show_probability):
+            self._probability_exit.handle(event)
+            return
         self._action.handle(event)
         self._autoplay_button.handle(event)
         self._statistics_button.handle(event)
+        self._probability_distribution.handle(event)
         self._side.handle(event)
         if (self._stage == 0):
             self._card_selector_button.handle(event)
@@ -270,10 +292,11 @@ class GameScreen(Screen):
         self._payoffs_side.draw(canvas)
         self._autoplay_button.draw(canvas)
         self._statistics_button.draw(canvas)
+        self._probability_distribution.draw(canvas)
         self._main_menu.draw(canvas)
         if (self._stage == 0):
             self._card_selector_button.draw(canvas)
-        if (self._show_statistics):
+        if (self._show_statistics) and (self._statistics):
             self._statistics.draw(canvas)
         if self._pull:
             self._pull.draw(canvas)
@@ -285,6 +308,15 @@ class GameScreen(Screen):
         [card.draw(canvas) for card in self.cards]
         [bet.draw(canvas) for bet in self._bet_labels]
         [bet.draw(canvas) for bet in self._bets if bet.text]
+        if self._show_probability:
+            s = pygame.Surface((canvas.get_width(), canvas.get_height()))
+            s.set_alpha(80)
+            s.fill(Colors.black)
+            canvas.blit(s, (0,0))
+            pygame.draw.rect(canvas, Colors.white, (350, 90, 500, 300))
+            pygame.draw.rect(canvas, Colors.black, (347, 87, 506, 306), 5)
+            self._probability.draw(canvas)
+            self._probability_exit.draw(canvas)
 
     def next(self):
         return self._next_screen
