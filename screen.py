@@ -43,7 +43,8 @@ class GameScreen(Screen):
         self._action = Button(290, 500, width=148, height=50, text="Make $0 Bet", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.action))
         
-        self._pull = None
+        self._pull = Button(480, 500, width=148, height=50, text="Reset Bet", color=Colors.light_gray, down_color=Colors.gray,
+            action=self.clear)
         self._winning = None
         self._winning_side = None
         self._autoplay_button = Button(1036, 500, width=128, height=40, text="Autoplay On", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
@@ -96,7 +97,7 @@ class GameScreen(Screen):
         ]
 
     def add_bet(self, amount):
-        if self._stage == 0 and self.game.player.money > self._bet_pool + (amount* 3):
+        if self._stage == 0 and self.game.player.money >= self._bet_pool*3 + (amount* 3):
             self._bet_pool += amount
             self._action.text = "Make $" + str(self._bet_pool * 3) + " Bet"
 
@@ -209,12 +210,14 @@ class GameScreen(Screen):
 
     def clear(self):
         if (self._stage == 0):
-            self._pull = None
+            self._pull = Button(480, 500, width=148, height=50, text="Reset Bet", color=Colors.light_gray, down_color=Colors.gray,
+                action=self.clear)
             self._action.text = "Make $0 Bet"
             self._cards = []
             self._winning = None
             self._winning_side = None
             self._statistics = None
+            self._bet_pool = 0
             for bet in self._bets:
                 bet.text = None
 
