@@ -212,7 +212,7 @@ class Hand:
             
         royals = [1, 10, 11, 12, 13]
         ranks = [card.rank for card in hand]
-        is_royal = all([r in ranks for r in royals])
+        is_royal = ranks == royals
         is_straight = ranks == list(range(ranks[0], ranks[-1] + 1)) or is_royal
         is_flush = len([c for c in hand if c.Suit == hand[0].Suit]) == size
 
@@ -254,26 +254,25 @@ class Hand:
         Returns:
             HandType -- Hand type.
         """
-        hand = self._cards.copy()
-        del hand[4]
-        del hand[3]
+        hand = self._cards.copy()[:3]
         hand.sort()
         size=3
 
         royals = [11, 12, 13]
         ranks = [card.rank for card in hand]
-        is_royal = all([r in ranks for r in royals])
-        is_straight = ranks == list(range(ranks[0], ranks[-1] + 1)) or is_royal
+        high = ranks == [1, 12, 13]
+        is_royal = ranks == royals
+        is_straight = ranks == list(range(ranks[0], ranks[-1] + 1)) or high
         is_flush = len([c for c in hand if c.Suit == hand[0].Suit]) == size
 
         if is_royal and is_flush:
             return HandType.mini_royal
         if is_straight and is_flush:
-            return HandType.straight_flush
+            return HandType.straight_flush_side
         if is_straight:
-            return HandType.straight
+            return HandType.straight_side
         if is_flush:
-            return HandType.flush
+            return HandType.flush_side
 
         count_map = {
             c.rank: len([c2 for c2 in hand if c2.rank == c.rank]) for c in hand
@@ -281,7 +280,7 @@ class Hand:
         counts = list(count_map.values())
 
         if counts.count(3) == 1:
-            return HandType.three_of_kind
+            return HandType.three_of_kind_side
   
         if counts.count(2) == 1:
             return HandType.pair_side
