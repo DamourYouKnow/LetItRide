@@ -4,6 +4,7 @@ from pygame.event import Event
 from pygame.font import Font
 import pygame
 import string
+import math
 from core import *
 from enum import Enum
 from typing import Tuple
@@ -39,7 +40,7 @@ class Screen(ABC):
 class GameScreen(Screen):
     def __init__(self, settings: Settings):
         CardObject.CARD_BACK = settings.card
-        self._action = Button(300, 500, width=128, height=50, text="Make $0 Bet", color=Colors.light_gray, down_color=Colors.gray,
+        self._action = Button(290, 500, width=148, height=50, text="Make $0 Bet", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.action))
         
         self._pull = None
@@ -52,46 +53,46 @@ class GameScreen(Screen):
         self._statistics_button = Button(1036, 600, width=128, height=40, text="Show Statistics", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
             action=(self.show_statistics))
         self._show_statistics = False
-        self._main_menu = Button(50, 50, width=100, height=50, text="Main Menu", color=Colors.light_gray, down_color=Colors.gray, 
+        self._main_menu = Button(10, 10, width=100, height=50, text="Main Menu", color=Colors.light_gray, down_color=Colors.gray, 
             action=(lambda: self.home(settings)))
         self._game = Game(settings.game_decks, settings.player_name, settings.player_bankroll)
         self.game.deal()
         self._cards = []
         self._background = TextureManager.load(settings.background)
         self._stage = 0
-        self._bankroll = Button(100, 500, height=50, text="Bankroll: ", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
-        self._side = Button(700, 400, width=128, height=40, text="Side Bet:OFF", color=Colors.light_gray, down_color=Colors.gray,
+        self._bankroll = Button(100, 500, height=50, width=148, text="Bankroll: ", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
+        self._side = Button(690, 500, width=148, height=50, text="Side Bet:OFF", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.side))
         self._side_state=False
         
         payoffTexts = ["Payouts", "-------"] + ["%s: %d" % (str(k), v) for k,v in Hand.payouts.items() if k not in [HandType.high, HandType.pair]]
-        self._payoffs = TextArea(1000, 10, payoffTexts, width=200, background_color=Colors.light_gray)
+        self._payoffs = TextArea(1000, 5, payoffTexts, width=200, background_color=Colors.light_gray)
         payoffSideTexts = ["Sidebet Payouts", "---------------"] + ["%s: %d" % (str(z), x) for z,x in Hand.sidePayouts.items() if z not in [HandType.high, HandType.pair]]
-        self._payoffs_side = TextArea(1000, 290, width=200, texts=payoffSideTexts, background_color=Colors.light_gray)
+        self._payoffs_side = TextArea(1000, 275, width=200, texts=payoffSideTexts, background_color=Colors.light_gray)
         self._statistics = None
         self._autoplay = False
         self._next_screen = self
 
         self._bet_pool = 0
         self._bet_buttons = [
-            SpriteObject(100, 575, "./assets/chip-1.png", scale=0.8, action=(lambda: self.add_bet(1))),
-            SpriteObject(175, 575, "./assets/chip-5.png", scale=0.8, action=(lambda: self.add_bet(5))),
-            SpriteObject(250, 575, "./assets/chip-10.png", scale=0.8, action=(lambda: self.add_bet(10))),
-            SpriteObject(325, 575, "./assets/chip-20.png", scale=0.8, action=(lambda: self.add_bet(20))),
-            SpriteObject(400, 575, "./assets/chip-50.png", scale=0.8, action=(lambda: self.add_bet(50))),
-            SpriteObject(475, 575, "./assets/chip-100.png", scale=0.8, action=(lambda: self.add_bet(100)))
+            SpriteObject(139, 575, "./assets/chip-1.png", scale=0.8, action=(lambda: self.add_bet(1))),
+            SpriteObject(214, 575, "./assets/chip-5.png", scale=0.8, action=(lambda: self.add_bet(5))),
+            SpriteObject(289, 575, "./assets/chip-10.png", scale=0.8, action=(lambda: self.add_bet(10))),
+            SpriteObject(364, 575, "./assets/chip-20.png", scale=0.8, action=(lambda: self.add_bet(20))),
+            SpriteObject(439, 575, "./assets/chip-50.png", scale=0.8, action=(lambda: self.add_bet(50))),
+            SpriteObject(514, 575, "./assets/chip-100.png", scale=0.8, action=(lambda: self.add_bet(100)))
         ]
 
         self._deck = CardObject(700, 50, Card(1, Suit.clubs), False)
         self._bet_labels = [
-            Button(210, 400, "$", width=80, height=30),
-            Button(310, 400, "2", width=80, height=30),
-            Button(410, 400, "1", width=80, height=30)
+            Button(224, 400, "$", width=80, height=30),
+            Button(324, 400, "2", width=80, height=30),
+            Button(424, 400, "1", width=80, height=30)
         ]
         self._bets = [
-            Button(210, 430, None, width=80, height=30),
-            Button(310, 430, None, width=80, height=30),
-            Button(410, 430, None, width=80, height=30)
+            Button(224, 430, None, width=80, height=30),
+            Button(324, 430, None, width=80, height=30),
+            Button(424, 430, None, width=80, height=30)
         ]
 
     def add_bet(self, amount):
@@ -120,7 +121,7 @@ class GameScreen(Screen):
 
             x = 100
             for card in self._cards:
-                card.deal(x, 200)
+                card.deal(x, 160)
                 x += 100
 
             [self._cards[i].flip() for i in range(3)]
@@ -134,7 +135,7 @@ class GameScreen(Screen):
             
             
             self._stage = 1
-            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 1", color=Colors.light_gray, down_color=Colors.gray,
+            self._pull = Button(480, 500, width=148, height=50, text="Pull Bet 1", color=Colors.light_gray, down_color=Colors.gray,
             action=(lambda: self.action(True)))
             self._action.text = "Let it ride"
             self._winning = None
@@ -146,7 +147,7 @@ class GameScreen(Screen):
             if (pull):
                 self._game.player.pull()
                 self._bets[2].text = ""
-            self._pull = Button(500, 500, width=128, height=50, text="Pull Bet 2", color=Colors.light_gray, down_color=Colors.gray,
+            self._pull = Button(480, 500, width=148, height=50, text="Pull Bet 2", color=Colors.light_gray, down_color=Colors.gray,
                 action=(lambda: self.action(True)))
             if (self._show_statistics):
                 self.update_statistics()
@@ -158,7 +159,7 @@ class GameScreen(Screen):
             self._cards[4].flip()
             if (self._show_statistics):
                 self.update_statistics()
-            self._pull = Button(500, 500, width=128, height=50, text="Clear Bet", color=Colors.light_gray, down_color=Colors.gray,
+            self._pull = Button(480, 500, width=148, height=50, text="Clear Bet", color=Colors.light_gray, down_color=Colors.gray,
                 action=(lambda: self.clear()))
             self._game.player.payout()
             payout = self._game.player.hand.payout(self._game.player.full_bet)
@@ -200,7 +201,7 @@ class GameScreen(Screen):
         self._probabilityWin = sum([v for k,v in probabilities.items() if k in Hand.payouts])/Statistics.choose(52-2-self._stage, 3-self._stage)
         self._expectedValue = Statistics.expectedValue(cards, probabilities)
         self._shouldRide = Statistics.shouldRide(cards, self._expectedValue)
-        self._statistics = TextArea(795, 605, [
+        self._statistics = TextArea(664, 585, [
             "Should Ride: " + str(self._shouldRide),
             "Expected Value: " + ("%.3f" % self._expectedValue),
             "Probability Win: " + ("%.3f" % self._probabilityWin)
@@ -250,8 +251,13 @@ class GameScreen(Screen):
         canvas.blit(self._background, (0,0))
         pygame.draw.rect(canvas, Colors.light_gray, Rect(1000, 0, 200, 800))
         pygame.draw.rect(canvas, Colors.gray, Rect(995, 0, 5, 800))
-        pygame.draw.rect(canvas, Colors.gray, Rect(1000, 275, 200, 5))
-        pygame.draw.rect(canvas, Colors.gray, Rect(1000, 485, 200, 5))
+        pygame.draw.rect(canvas, Colors.gray, Rect(1000, 265, 200, 5))
+        pygame.draw.rect(canvas, Colors.gray, Rect(1000, 470, 200, 5))
+        pygame.draw.rect(canvas, Colors.gray, Rect(0, 470, 995, 5))
+        panel = pygame.Surface((995, 200))
+        panel.set_alpha(80)
+        panel.fill((0,0,0))
+        canvas.blit(panel, (0, 475))
         self._action.draw(canvas)
         self._bankroll.draw(canvas)
         self._side.draw(canvas)
@@ -349,15 +355,15 @@ class MainMenu(Screen):
         CardObject.CARD_BACK = settings.card
         self._next_screen = self
         self._settings = settings
-        self._buttons2 = [
-            #Button(25, 25, "Setting", Colors.green, action=self._to_settings)
-        ]
+        self._background = TextureManager.load(settings.background)
         self._buttons = [
-		    Button(100, 200, "Play", Colors.green,width=150, height=100, action=self._to_game),
-            Button(100, 300, "Settings", Colors.green, action=self._to_settings)
+		    Button(400, 250, "Play", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_game),
+		    Button(400, 350, "Info", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_info),
+            Button(400, 450, "Settings", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_settings)
         ]
         self._labels = [
-		    Label(50, 50, "Let It Ride Poker", font_size = 64),
+		    Label(340, 70, "Let It Ride Poker", font_size = 80, font_name="IMPACT", color=Colors.white),
+            Label(361, 650, "Created by Bailey D'Amour, Joey Miller and Michael Cardy", color=Colors.white)
 		]
         if not MainMenu.LOADED:
             [TextureManager.load("./assets/card_back" + str(i) + ".png") for i in range(1,6)]
@@ -370,6 +376,9 @@ class MainMenu(Screen):
     def _to_settings(self):
         self._next_screen = SettingsScreen(self._settings)
     
+    def _to_info(self):
+        self._next_screen = InfoScreen(self._settings)
+
     @property
     def buttons(self):
         return self._buttons
@@ -386,7 +395,46 @@ class MainMenu(Screen):
 
     def draw(self, canvas: Surface):
         canvas.fill(Colors.white)
+        canvas.blit(self._background, (0,0))
+        card_back = TextureManager.load(CardObject.CARD_BACK)
+        canvas.blit(card_back, (800, 45))
+        canvas.blit(pygame.transform.rotate(card_back, -20), (800, 55))
+        canvas.blit(pygame.transform.rotate(card_back, -40), (800, 80))
+        back = Surface((540, 100))
+        back.set_alpha(120)
+        back.fill(Colors.black)
+        canvas.blit(back, (330, 70))
         [item.draw(canvas) for item in self.buttons + self.labels]
+    
+    def next(self):
+        return self._next_screen
+
+class InfoScreen(Screen):
+
+    def __init__(self, settings: Settings):
+        self._next_screen = self
+        self._background = TextureManager.load(settings.background)
+        self._buttons = [Button(10, 10, width=100, height=50, text="Main Menu", color=Colors.light_gray, down_color=Colors.gray, 
+            action=(lambda: self.home(settings)))]
+
+    def handle(self, event: Event):
+        for button in self.buttons:
+            button.handle(event)
+
+    def home(self, settings):
+        self._next_screen = MainMenu(settings)
+
+    @property
+    def buttons(self):
+        return self._buttons
+
+    def update(self):
+        pass
+
+    def draw(self, canvas: Surface):
+        canvas.fill(Colors.white)
+        canvas.blit(self._background, (0,0))
+        [item.draw(canvas) for item in self.buttons]
     
     def next(self):
         return self._next_screen
