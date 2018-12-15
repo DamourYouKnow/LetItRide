@@ -2,6 +2,7 @@ import random
 from enum import Enum
 from typing import List
 import itertools
+import math
     
 class Suit(Enum):
     """
@@ -299,8 +300,12 @@ class Deck:
         Keyword Arguments:
             count {int} -- Size of deck (default: {1})
         """
-
-        self._cards = Deck._create_deck(count)
+        if (count < 100):
+            self._cards = Deck._create_deck(count)
+            self._infinite = False
+        else:
+            self._cards = Deck._create_deck(1)
+            self._infinite = True
 
     @property
     def cards(self) -> List[Card]:
@@ -317,7 +322,10 @@ class Deck:
         Returns:
             Card -- Drawn card.
         """
-        return self._cards.pop()
+        if (self._infinite):
+            return random.choice(self._cards)
+        else:
+            return self._cards.pop()
 
     def shuffle(self):
         """
@@ -550,11 +558,10 @@ class Statistics:
 
     @staticmethod
     def expectedValue(cards, probabilityDistribution = None):
-        choose = 5-len(cards)
         results = probabilityDistribution 
         if not probabilityDistribution:
             results = Statistics.probabilityDistribution(cards)
-        possibilities = Statistics.choose(52-5+choose, choose)
+        possibilities = sum(probabilityDistribution.values())
         ev = 0
         for k,v in results.items():
             if k in Hand.payouts:
@@ -564,7 +571,7 @@ class Statistics:
         return ev
 
     @staticmethod
-    def probabilityDistribution(cards):
+    def probabilityDistribution(cards, numDecks):
         choose = 5-len(cards)
         results = dict()
         for t in HandType:
@@ -572,23 +579,12 @@ class Statistics:
         if (choose <= 0):
             results[Hand(cards).type] = 1
             return results
-        deck = Deck(1).cards
-        for card in cards:
-            deck.remove(card)
+        deck = Deck(numDecks).cards
+        if (numDecks != math.inf):
+            for card in cards:
+                deck.remove(card)
         for n in itertools.combinations(deck, choose):
             hand = Hand(cards + list(n))
             results[hand.type] += 1
         return results
-
-    @staticmethod
-    def choose(n,k):
-        if k<0 or n<k:
-            return 0
-        nk = 1
-        kk = 1
-        for i in range(1, min(n-k, k) + 1):
-            nk = nk*n
-            kk = kk*i
-            n = n - 1
-        return nk//kk
             
