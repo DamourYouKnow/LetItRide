@@ -390,6 +390,9 @@ class Game:
 
 
 class Settings:
+    """
+    Initializes settings for the game
+    """
     def __init__(
             self, 
             player_name: str="Player", player_bankroll: int=1000, 
@@ -402,26 +405,44 @@ class Settings:
         self._background = background
         self._card = card
     
+    """
+    Gets the name of the player
+    """
     @property
     def player_name(self):
         return self._player_name
 
+    """
+    Gets the player bankroll
+    """
     @property
     def player_bankroll(self):
         return self._player_bankroll
 
+    """
+    Setter for player bankroll
+    """
     @player_bankroll.setter
     def player_bankroll(self, value: int):
         self._player_bankroll = value
         
+    """
+    Gets the number of decks used in the game
+    """
     @property
     def game_decks(self):
         return self._game_decks
 
+    """
+    Gets the configurable background image
+    """
     @property
     def background(self):
         return self._background
 
+    """
+    Gets the configurable card back
+    """
     @property
     def card(self):
         return self._card
@@ -550,28 +571,39 @@ class Player:
 
 
 class Statistics:
+    """
+    Returns whether or not a hand should be ridden. Uses expected value
+    If no expected value is given, one will be generated with deck size 1
+    """
     @staticmethod
-    def shouldRide(cards, expectedValue = None):
+    def shouldRide(cards, expectedValue: float = None) -> bool:
         if not expectedValue:
             expectedValue = Statistics.expectedValue(cards)
         return expectedValue >= 0
 
+    """
+    Returns the expected value of a hand given a hand distribution
+    If no hand distribution is given, a deck of size 1 is used to generate
+    """
     @staticmethod
-    def expectedValue(cards, probabilityDistribution = None):
-        results = probabilityDistribution 
-        if not probabilityDistribution:
-            results = Statistics.probabilityDistribution(cards)
-        possibilities = sum(probabilityDistribution.values())
+    def expectedValue(cards, handDistribution: dict = None) -> float:
+        if not handDistribution:
+            handDistribution = Statistics.handDistribution(cards, 1)
+        possibilities = sum(handDistribution.values())
         ev = 0
-        for k,v in results.items():
+        for k,v in handDistribution.items():
             if k in Hand.payouts:
                 ev += Hand.payouts[k] * v/possibilities
             else:
                 ev -= v/possibilities
         return ev
 
+    """
+    Generates the hand distribution for a given set of cards
+    with a certain number of decks. Defaults to 1 deck
+    """
     @staticmethod
-    def probabilityDistribution(cards, numDecks):
+    def handDistribution(cards, numDecks: int=1) -> dict:
         choose = 5-len(cards)
         results = dict()
         for t in HandType:

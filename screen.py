@@ -9,6 +9,9 @@ from core import *
 from enum import Enum
 from typing import Tuple
 
+"""
+Some color definitions to keep things consistent
+"""
 class Colors:
     light_gray = Color(200, 200, 200, 1)
     gray = Color(150, 150, 150, 1)
@@ -18,25 +21,42 @@ class Colors:
     blue_gray = Color(180, 180, 200, 1)
     dark_blue_gray = Color(120, 120, 140, 1)
 
-
+"""
+The screen object is used to draw the screen and handle events
+"""
 class Screen(ABC):
 
+    """
+    Handle called every game loop before the draw phase
+    """
     @abstractmethod
     def handle(self, event: Event):
         pass
     
+    """
+    Update called every game loop before draw and after handle
+    """
     @abstractmethod
     def update(self):
         pass
 
+    """
+    Draw method called every game loop before next screen is called
+    """
     @abstractmethod
     def draw(self, canvas: Surface):
         pass
     
+    """
+    Next is called every game loop to allow a new screen to take over
+    """
     @abstractmethod
     def next(self):
         return self
 
+"""
+The main gameplay screen
+"""
 class GameScreen(Screen):
     def __init__(self, settings: Settings):
         CardObject.CARD_BACK = settings.card
@@ -208,7 +228,7 @@ class GameScreen(Screen):
         else:
             cards = self.game.player.hand.cards
         deck_count = self._game._deck_count if self._game._deck_count < 10 else math.inf
-        probabilities = Statistics.probabilityDistribution(cards, deck_count)
+        probabilities = Statistics.handDistribution(cards, deck_count)
         self._probabilityWin = sum([v for k,v in probabilities.items() if k in Hand.payouts])/sum(probabilities.values())
         self._expectedValue = Statistics.expectedValue(cards, probabilities)
         self._shouldRide = Statistics.shouldRide(cards, self._expectedValue)
@@ -321,6 +341,9 @@ class GameScreen(Screen):
     def next(self):
         return self._next_screen
 
+"""
+A screen to choose cards for the next hand
+"""
 class CardSelectorScreen(Screen):
     
     def __init__(self, game: GameScreen):
@@ -383,6 +406,9 @@ class CardSelectorScreen(Screen):
     def next(self):
         return self._next_screen
 
+"""
+The main menu's screen
+"""
 class MainMenu(Screen):
 
     LOADED = False
@@ -433,9 +459,9 @@ class MainMenu(Screen):
         canvas.fill(Colors.white)
         canvas.blit(self._background, (0,0))
         card_back = TextureManager.load(CardObject.CARD_BACK)
+        canvas.blit(pygame.transform.rotate(card_back, 20), (720, 28))
         canvas.blit(card_back, (800, 45))
-        canvas.blit(pygame.transform.rotate(card_back, -20), (800, 55))
-        canvas.blit(pygame.transform.rotate(card_back, -40), (800, 80))
+        canvas.blit(pygame.transform.rotate(card_back, -20), (820, 45))
         back = Surface((540, 100))
         back.set_alpha(120)
         back.fill(Colors.black)
@@ -445,6 +471,9 @@ class MainMenu(Screen):
     def next(self):
         return self._next_screen
 
+"""
+The info screen gives game rules and misc. information regarding the program
+"""
 class InfoScreen(Screen):
 
     def __init__(self, settings: Settings):
@@ -475,6 +504,9 @@ class InfoScreen(Screen):
     def next(self):
         return self._next_screen
 
+"""
+The settings screen to choose game settings
+"""
 class SettingsScreen(Screen):
 
     def __init__(self, settings: Settings=Settings()):
@@ -550,12 +582,17 @@ class SettingsScreen(Screen):
     def next(self):
         return self._next_screen
 
+"""
+Texture manager caches textures to avoid reloading of textures
+"""
 class TextureManager:
     textures = dict()
 
+    @staticmethod
     def save(path, img):
         TextureManager.textures[path] = img
 
+    @staticmethod
     def load(path: str) -> Surface:
         if (path in TextureManager.textures):
             return TextureManager.textures.get(path)
@@ -564,6 +601,9 @@ class TextureManager:
             TextureManager.textures[path] = img
             return img
 
+"""
+Abstract game object
+"""
 class GameObject(ABC):
     def __init__(self, x: int, y: int, width: int, height: int):
         self._x = x
@@ -617,6 +657,9 @@ class GameObject(ABC):
     def draw(self, canvas: Surface):
         raise NotImplementedError()
 
+"""
+Text box allows for player input
+"""
 class TextBox(GameObject):
     def __init__(
             self, x: int, y: int, width: int, height: int, text: str=None, placeholder_text: str="", placeholder_color: Color=Colors.gray,
@@ -673,6 +716,9 @@ class TextBox(GameObject):
             pygame.draw.rect(canvas, Colors.black, self.rect, 1)
         self._label.draw(canvas)
 
+"""
+Text area allows for mult line labels
+"""
 class TextArea(GameObject):
     def __init__(
             self, x: int, y: int, texts: List[str], width: int=0, height: int=0, 
@@ -723,6 +769,9 @@ class TextArea(GameObject):
                 self.y + self._padding + (i*self.font.get_height()))) 
             for i, textSurface in enumerate(textSurfaces)]
 
+"""
+Label renders text
+"""
 class Label(GameObject):
     def __init__(
             self, x: int, y: int, text: str, 
@@ -755,6 +804,9 @@ class Label(GameObject):
         textSurface = self.font.render(self.text, False, self.color)
         canvas.blit(textSurface, (self.x, self.y))
 
+"""
+SpriteObjects render sprites, handle clicks
+"""
 class SpriteObject(GameObject):
     def __init__(self, x: int, y: int, sprite: str, scale: float=1, action=None):
         self._scale = scale
@@ -793,6 +845,9 @@ class SpriteObject(GameObject):
             except:
                 self.action()
 
+"""
+Specialized sprite to allow for card click handling and flipping/dealing
+"""
 class CardObject(SpriteObject):
     CARD_BACK = "./assets/card_back.png"
 
@@ -852,6 +907,9 @@ class CardObject(SpriteObject):
         else:
             canvas.blit(self.sprite, (self.x, self.y))
 
+"""
+Clickable buttons
+"""
 class Button(GameObject):
     def __init__(
             self, x: int, y: int, text: str, 

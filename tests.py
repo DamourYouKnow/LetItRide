@@ -232,19 +232,19 @@ class TestMethods(unittest.TestCase):
         
     def test_expected_val(self):
         hand = [Card(3, Suit.clubs), Card(3, Suit.spades), Card(10, Suit.clubs)]
-        probabilityDistribution = Statistics.probabilityDistribution(hand)
+        handDistribution = Statistics.handDistribution(hand, 1)
         expectedDistribution = dict()
         expectedDistribution[HandType.pair] = 880
         expectedDistribution[HandType.two_pair] = 198
         expectedDistribution[HandType.three_of_kind] = 88
         expectedDistribution[HandType.full_house] = 9
         expectedDistribution[HandType.four_of_kind] = 1
-        for k,v in probabilityDistribution.items():
+        for k,v in handDistribution.items():
             if k in expectedDistribution:
                 self.assertEqual(v, expectedDistribution[k])
             else:
                 self.assertEqual(v, 0)
-        self.assertEqual(sum(probabilityDistribution.values()), 1176)
+        self.assertEqual(sum(handDistribution.values()), 1176)
 
     def test_expected_pull(self):
         hand = [Card(3, Suit.clubs), Card(3, Suit.spades), Card(10, Suit.clubs)]
