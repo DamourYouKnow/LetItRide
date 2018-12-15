@@ -68,6 +68,15 @@ class TestMethods(unittest.TestCase):
 
     def test_straight(self):
         cards = [
+            Card(4, Suit.hearts),
+            Card(5, Suit.clubs),
+            Card(6, Suit.clubs),
+            Card(7, Suit.clubs),
+            Card(8, Suit.clubs)
+        ]
+        self.assertEqual(Hand(cards).type, HandType.straight)
+    
+        cards = [
             Card(1, Suit.hearts),
             Card(2, Suit.clubs),
             Card(3, Suit.clubs),
@@ -134,6 +143,68 @@ class TestMethods(unittest.TestCase):
             Card(8, Suit.clubs)
         ]
         self.assertEqual(Hand(cards).type, HandType.high)
+
+    def test_side_royal(self):
+        cards = [
+            Card(11, Suit.hearts),
+            Card(12, Suit.hearts),
+            Card(13, Suit.hearts)
+        ]
+        self.assertEqual(Hand(cards).type_side, HandType.mini_royal)
+
+    def test_side_straight_flush(self):
+        cards = [
+            Card(2, Suit.hearts),
+            Card(3, Suit.hearts),
+            Card(4, Suit.hearts)
+        ]
+        self.assertEqual(Hand(cards).type_side, HandType.straight_flush_side)
+
+    def test_side_three_of_kind(self):
+        cards = [
+            Card(2, Suit.hearts),
+            Card(2, Suit.diamonds),
+            Card(2, Suit.spades)
+        ]
+        self.assertEqual(Hand(cards).type_side, HandType.three_of_kind_side)
+    
+    def test_side_straight(self):
+        cards = [
+            Card(4, Suit.hearts),
+            Card(5, Suit.diamonds),
+            Card(6, Suit.spades)
+        ]
+        self.assertEqual(Hand(cards).type_side, HandType.straight_side)
+
+        cards = [
+            Card(12, Suit.hearts),
+            Card(13, Suit.diamonds),
+            Card(1, Suit.spades)
+        ]
+        self.assertEqual(Hand(cards).type_side, HandType.straight_side)
+
+        cards = [
+            Card(1, Suit.hearts),
+            Card(2, Suit.diamonds),
+            Card(3, Suit.spades)
+        ]
+        self.assertEqual(Hand(cards).type_side, HandType.straight_side)
+
+    def test_side_flush(self):
+        cards = [
+            Card(2, Suit.hearts),
+            Card(4, Suit.hearts),
+            Card(6, Suit.hearts)
+        ] 
+        self.assertEqual(Hand(cards).type_side, HandType.flush_side)
+
+    def test_side_pair(self):
+        cards = [
+            Card(2, Suit.hearts),
+            Card(2, Suit.spades),
+            Card(3, Suit.diamonds)
+        ] 
+        self.assertEqual(Hand(cards).type_side, HandType.pair_side)
 
     def test_payout(self):
         cards = [
