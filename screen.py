@@ -107,6 +107,7 @@ class GameScreen(Screen):
             SpriteObject(439, 575, "./assets/chip-50.png", scale=0.8, action=(lambda: self.add_bet(50))),
             SpriteObject(514, 575, "./assets/chip-100.png", scale=0.8, action=(lambda: self.add_bet(100)))
         ]
+        self._x3_label = Label(600, 585, "x3", font_size=42, color=Colors.white)
 
         self._deck = CardObject(700, 50, Card(1, Suit.clubs), False)
         self._bet_labels = [
@@ -328,6 +329,7 @@ class GameScreen(Screen):
         [card.draw(canvas) for card in self.cards]
         [bet.draw(canvas) for bet in self._bet_labels]
         [bet.draw(canvas) for bet in self._bets if bet.text]
+        self._x3_label.draw(canvas)
         if self._show_probability:
             s = pygame.Surface((canvas.get_width(), canvas.get_height()))
             s.set_alpha(80)
