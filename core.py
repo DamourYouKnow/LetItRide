@@ -402,6 +402,10 @@ class Settings:
     def player_bankroll(self):
         return self._player_bankroll
 
+    @player_bankroll.setter
+    def player_bankroll(self, value: int):
+        self._player_bankroll = value
+        
     @property
     def game_decks(self):
         return self._game_decks
