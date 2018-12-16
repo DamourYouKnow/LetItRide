@@ -68,13 +68,13 @@ class GameScreen(Screen):
             action=self.clear)
         self._winning = None
         self._winning_side = None
-        self._autoplay_button = Button(1020, 480, width=160, height=40, text="Autoplay On", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+        self._autoplay_button = Button(1020, 480, width=160, height=40, text="Autoplay On", color=Colors.gray, down_color=Colors.dark_blue_gray,
             action=(self.autoplay))
-        self._card_selector_button = Button(1020, 530, width=160, height=40, text="Card Selector", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+        self._card_selector_button = Button(1020, 530, width=160, height=40, text="Card Selector", color=Colors.gray, down_color=Colors.dark_blue_gray,
             action=(self.cardselector))
-        self._statistics_button = Button(1020, 580, width=160, height=40, text="Show Statistics", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+        self._statistics_button = Button(1020, 580, width=160, height=40, text="Show Statistics", color=Colors.gray, down_color=Colors.dark_blue_gray,
             action=(self.show_statistics))
-        self._probability_distribution = Button(1020, 630, width=160, height=40, text="Probability Dist.", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+        self._probability_distribution = Button(1020, 630, width=160, height=40, text="Probability Dist.", color=Colors.gray, down_color=Colors.dark_blue_gray,
             action=(self.show_probability))
         self._probability_exit = Button(810, 90, width=30, height=20, text="x", color=Colors.light_gray, down_color=Colors.gray, action=self.show_probability)
         self._show_statistics = False
