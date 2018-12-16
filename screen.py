@@ -131,12 +131,12 @@ class GameScreen(Screen):
     def add_bet(self, amount):
         if self._stage != 0:
             return        
-        if not self._side_state and self.game.player.money >= self._bet_pool*3 + (amount* 3):
+        if not self._side_state and self.game.player.money >= (self._bet_pool * 3) + (amount* 3) + self._side_bet:
             self._bet_pool += amount
             self._action.text = "Make $" + str(self._bet_pool * 3) + " Bet"
             for bet in self._bets:
                 bet.text = str(self._bet_pool)
-        if self._side_state and self.game.player.money >= self._side_bet:
+        if self._side_state and self.game.player.money >= self._side_bet + amount + (self._bet_pool * 3):
             self._side_bet += amount
             self._side_bet_label.text = "Side: " + str(self._side_bet)
             
@@ -152,7 +152,7 @@ class GameScreen(Screen):
         if (self._stage == 0):
             if (self._bet_pool <= 0):
                 return
-            if (self._bet_pool*3 + int(self._side_bet_label.text) > self._game.player.money):
+            if (self._bet_pool*3 + int(self._side_bet_label.text[len("side: "):]) > self._game.player.money):
                 self._winning = Button(250, 25, width=228, height=50, text="Can't make bet, not enough money", color=Colors.white, 
                     down_color=Colors.white, padding=5, border_color=Colors.black)
                 return
@@ -172,9 +172,9 @@ class GameScreen(Screen):
             
             self._winning_side=None
             if (self._side_bet > 0 and self._side_state==True):       
-                self.game.player.side_bet(int(self._side_bet_label.text))
+                self.game.player.side_bet(int(self._side_bet_label.text[len("side: "):]))
                 self._game.player.payout_side()
-                payout_side = self._game.player.hand.payout_side(int(self._side_bet_label.text))
+                payout_side = self._game.player.hand.payout_side(int(self._side_bet_label.text[len("side: "):]))
                 winText_side = "Side bet: " + str(self.game.player.hand.type_side) + " - Win $" + str(payout_side)
                 
                 self._winning_side = Button(250, 80, width=228, height=50, text=winText_side, color=Colors.white, 
