@@ -488,8 +488,38 @@ class InfoScreen(Screen):
     def __init__(self, settings: Settings):
         self._next_screen = self
         self._background = TextureManager.load(settings.background)
-        self._buttons = [Button(10, 10, width=100, height=50, text="Main Menu", color=Colors.light_gray, down_color=Colors.gray, 
+        self._buttons = [Button(10, 10, width=100, height=50, text="Back", color=Colors.light_gray, down_color=Colors.gray, 
             action=(lambda: self.home(settings)))]
+        self._labels = [
+            Label(120, 10, "Rules", color=Colors.white, font_size=40),
+            TextArea(120, 60, [
+            "Let it ride is a poker game where the player receives 3 cards and attempts to form a poker hand with two community cards.",
+            "The game is based on deciding between 'riding' and 'pulling' a bet after each stage of the game. The gameplay is as follows:",
+            "  1. The player makes 3 bets, one is the anti and two ride bets.",
+            "  2. The player is then given 3 cards and 2 community cards are shown face down.",
+            "  3. The player is now given the choice of pulling back the first ride bet.",
+            "  4. The first community card is then exposed.",
+            "  5. The player now has the choice to pull back the second ride bet.",
+            "  6. The last community card is shown and payouts are paid accordingly.",
+            "The poker hands vary slightly from a normal poker game as Let it Ride is a fixed payout game. For example, two pairs may",
+            "give a payout of 2-1 rather than the pool like in other poker games. Furthermore, players need a pair of 10s or better",
+            "to receive any payout (ie. a pair of 9s does not qualify as a poker hand). Lastly, a side bet is offered prior to the deal",
+            "where players may bet on getting a 'mini' poker hand with their three cards."
+            ], color=Colors.white, background_color=None, centered=False),
+            Label(120, 340, "Features", color=Colors.white, font_size=40),
+            TextArea(120, 390, [
+              "To play, click a poker chip to choose a bet amount. Subsequent clicks will add on to the bet amount. Once ready, click the",
+              "bet button to make a bet. You will receive your three cards and see the community cards face down. You can then click ride",
+              "or pull to pull the first bet. Now one of the community cards will be revealed and you get to ride or pull the second bet.",
+              "After that, the payout will be calculated and paid accordingly based on the paytable to the right of the screen. The side",
+              "bet can be enabled using the side bet button and will be bet with the same amount as the rest of the bets. Some additional",
+              "features include configurability of deck numbers, bankroll, etc. in the settings screen, an autoplay button which will play",
+              "optimally automatically rebetting the same amount every time, a card selector screen that allows you to choose which cards",
+              "will show up the next hand and a couple different statistics screens showing the expected value and the probability breakdown",
+              "of the current hand."
+              ], color=Colors.white, background_color=None, centered=False),
+            Label(150, 625, "Created by Bailey D'Amour, Joseph Miller and Michael Cardy for Math3808, Fall 2018. Licensed under MIT. ", color=Colors.white),
+        ]
 
     def handle(self, event: Event):
         for button in self.buttons:
@@ -502,13 +532,17 @@ class InfoScreen(Screen):
     def buttons(self):
         return self._buttons
 
+    @property
+    def labels(self):
+        return self._labels
+
     def update(self):
         pass
 
     def draw(self, canvas: Surface):
         canvas.fill(Colors.white)
         canvas.blit(self._background, (0,0))
-        [item.draw(canvas) for item in self.buttons]
+        [item.draw(canvas) for item in self.buttons + self.labels]
     
     def next(self):
         return self._next_screen
