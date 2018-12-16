@@ -413,7 +413,7 @@ class Settings:
             self, 
             player_name: str="Player", player_bankroll: int=1000, 
             game_decks: int=1, 
-            background: str="./assets/felt5.png", 
+            background: str="./assets/felt3.png", 
             card: str="./assets/card_back1.png"):
         self._player_name = player_name
         self._player_bankroll = player_bankroll
