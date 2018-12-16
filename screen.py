@@ -5,6 +5,7 @@ from pygame.font import Font
 import pygame
 import string
 import math
+import sys
 from core import *
 from enum import Enum
 from typing import Tuple
@@ -429,8 +430,9 @@ class MainMenu(Screen):
         self._background = TextureManager.load(settings.background)
         self._buttons = [
 		    Button(400, 250, "Play", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_game),
-		    Button(400, 350, "Info", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_info),
-            Button(400, 450, "Settings", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_settings)
+		    Button(400, 340, "Info", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_info),
+            Button(400, 430, "Settings", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_settings),
+            Button(400, 520, "Quit", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=sys.exit)
         ]
         self._labels = [
 		    Label(340, 70, "Let It Ride Poker", font_size = 80, font_name="IMPACT", color=Colors.white),
