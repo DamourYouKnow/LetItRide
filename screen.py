@@ -140,7 +140,7 @@ class GameScreen(Screen):
         
     def action(self, pull=False):
         if (self._stage == 0):
-            if (self._bet_pool < 0):
+            if (self._bet_pool <= 0):
                 return
         
             self._game.deal()
