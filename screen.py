@@ -68,13 +68,13 @@ class GameScreen(Screen):
             action=self.clear)
         self._winning = None
         self._winning_side = None
-        self._autoplay_button = Button(1020, 480, width=160, height=40, text="Autoplay On", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+        self._autoplay_button = Button(1020, 480, width=160, height=40, text="Autoplay On", color=Colors.gray, down_color=Colors.dark_blue_gray,
             action=(self.autoplay))
-        self._card_selector_button = Button(1020, 530, width=160, height=40, text="Card Selector", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+        self._card_selector_button = Button(1020, 530, width=160, height=40, text="Card Selector", color=Colors.gray, down_color=Colors.dark_blue_gray,
             action=(self.cardselector))
-        self._statistics_button = Button(1020, 580, width=160, height=40, text="Show Statistics", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+        self._statistics_button = Button(1020, 580, width=160, height=40, text="Show Statistics", color=Colors.gray, down_color=Colors.dark_blue_gray,
             action=(self.show_statistics))
-        self._probability_distribution = Button(1020, 630, width=160, height=40, text="Probability Dist.", color=Colors.blue_gray, down_color=Colors.dark_blue_gray,
+        self._probability_distribution = Button(1020, 630, width=160, height=40, text="Probability Dist.", color=Colors.gray, down_color=Colors.dark_blue_gray,
             action=(self.show_probability))
         self._probability_exit = Button(810, 90, width=30, height=20, text="x", color=Colors.light_gray, down_color=Colors.gray, action=self.show_probability)
         self._show_statistics = False
@@ -87,10 +87,10 @@ class GameScreen(Screen):
         self._background = TextureManager.load(settings.background)
         self._stage = 0
         self._bankroll = Button(100, 500, height=50, width=148, text="Bankroll: ", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
-        self._side = Button(690, 500, width=148, height=50, text="Side Bet:OFF", color=Colors.light_gray, down_color=Colors.gray,
+        self._side = Button(690, 500, width=148, height=50, text="Main Bet", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.side))
         self._side_state=False
-        self._side_bet_label= Button(840, 500, height=50, width=75, text="0", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
+        self._side_bet_label= Button(840, 500, height=50, width=75, text="Side: 0", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
         
         payouts = ["%s %d:1" % (str(k), v) for k,v in sorted(Hand.payouts.items(), key=lambda x: x[1]) if k not in [HandType.high, HandType.pair]]
         payouts.reverse()
@@ -131,28 +131,28 @@ class GameScreen(Screen):
     def add_bet(self, amount):
         if self._stage != 0:
             return        
-        if not self._side_state and self.game.player.money >= self._bet_pool*3 + (amount* 3):
+        if not self._side_state and self.game.player.money >= (self._bet_pool * 3) + (amount* 3) + self._side_bet:
             self._bet_pool += amount
             self._action.text = "Make $" + str(self._bet_pool * 3) + " Bet"
             for bet in self._bets:
                 bet.text = str(self._bet_pool)
-        if self._side_state and self.game.player.money >= self._side_bet:
+        if self._side_state and self.game.player.money >= self._side_bet + amount + (self._bet_pool * 3):
             self._side_bet += amount
-            self._side_bet_label.text = str(self._side_bet)
+            self._side_bet_label.text = "Side: " + str(self._side_bet)
             
     def side(self):
         if (self._side_state ==False):
             self._side_state = True
-            self._side.text="Side Bet: ON"
+            self._side.text="Side Bet"
         else:
             self._side_state = False
-            self._side.text="Side Bet: OFF"
+            self._side.text="Main Bet"
         
     def action(self, pull=False):
         if (self._stage == 0):
             if (self._bet_pool <= 0):
                 return
-            if (self._bet_pool*3 + int(self._side_bet_label.text) > self._game.player.money):
+            if (self._bet_pool*3 + int(self._side_bet_label.text[len("side: "):]) > self._game.player.money):
                 self._winning = Button(250, 25, width=228, height=50, text="Can't make bet, not enough money", color=Colors.white, 
                     down_color=Colors.white, padding=5, border_color=Colors.black)
                 return
@@ -171,10 +171,15 @@ class GameScreen(Screen):
             [self._cards[i].flip() for i in range(3)]
             
             self._winning_side=None
+<<<<<<< HEAD
             if (self._side_bet > 0):       
                 self.game.player.side_bet(int(self._side_bet_label.text))
+=======
+            if (self._side_bet > 0 and self._side_state==True):       
+                self.game.player.side_bet(int(self._side_bet_label.text[len("side: "):]))
+>>>>>>> 111f64a8f50aafa7d065c51a296182bcc0258e9c
                 self._game.player.payout_side()
-                payout_side = self._game.player.hand.payout_side(int(self._side_bet_label.text))
+                payout_side = self._game.player.hand.payout_side(int(self._side_bet_label.text[len("side: "):]))
                 winText_side = "Side bet: " + str(self.game.player.hand.type_side) + " - Win $" + str(payout_side)
                 
                 self._winning_side = Button(250, 80, width=228, height=50, text=winText_side, color=Colors.white, 
@@ -282,7 +287,7 @@ class GameScreen(Screen):
             self._statistics = None
             self._bet_pool = 0
             self._side_bet=0
-            self._side_bet_label.text="0"
+            self._side_bet_label.text="Side: 0"
             for bet in self._bets:
                 bet.text = None
 
