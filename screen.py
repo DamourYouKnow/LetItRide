@@ -5,6 +5,7 @@ from pygame.font import Font
 import pygame
 import string
 import math
+import sys
 from core import *
 from enum import Enum
 from typing import Tuple
@@ -138,7 +139,7 @@ class GameScreen(Screen):
         
     def action(self, pull=False):
         if (self._stage == 0):
-            if self._bet_pool <= 0:
+            if (self._bet_pool < 0):
                 return
         
             self._game.deal()
@@ -200,6 +201,8 @@ class GameScreen(Screen):
             self._winning = Button(250, 25, width=228, height=50, text=winText, color=Colors.white, 
                     down_color=Colors.white, padding=5, border_color=Colors.black)
             self._action.text = "Repeat Bet"
+            if (self._bet_pool < 0):
+                return
 
     def home(self, settings):
         settings.player_bankroll = self._game.player.money
@@ -429,8 +432,9 @@ class MainMenu(Screen):
         self._background = TextureManager.load(settings.background)
         self._buttons = [
 		    Button(400, 250, "Play", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_game),
-		    Button(400, 350, "Info", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_info),
-            Button(400, 450, "Settings", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_settings)
+		    Button(400, 340, "Info", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_info),
+            Button(400, 430, "Settings", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_settings),
+            Button(400, 520, "Quit", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=sys.exit)
         ]
         self._labels = [
 		    Label(340, 70, "Let It Ride Poker", font_size = 80, font_name="IMPACT", color=Colors.white),
@@ -555,32 +559,30 @@ class SettingsScreen(Screen):
     def __init__(self, settings: Settings=Settings()):
         CardObject.CARD_BACK = settings.card
         self._player_name = TextBox(350, 150, 600, 40, text=settings.player_name, placeholder_text="Name...", font_size=30)
-        self._player_money = TextBox(350, 210, 600, 40, text=str(settings.player_bankroll), placeholder_text="Money...", font_size=30)
-        self._game_decks = TextBox(350, 270, 600, 40, text=str(settings.game_decks), placeholder_text="Decks...", font_size=30)
+        self._player_money = TextBox(350, 150, 600, 40, text=str(settings.player_bankroll), placeholder_text="Money...", font_size=30)
+        self._game_decks = TextBox(350, 210, 600, 40, text=str(settings.game_decks), placeholder_text="Decks...", font_size=30)
         self._warning = Button(380, 600, width=440, color=Color(220, 100, 100, 1), text=None)
         self._backgrounds = []
         for i in range(0,5):
             background = "./assets/felt" + str(i+1) + ".png"
-            sprite = SpriteObject(400 + i*100, 350, background, scale=0.08, action=(lambda s: self.set_background(s.background)))
+            sprite = SpriteObject(400 + i*100, 280, background, scale=0.08, action=(lambda s: self.set_background(s.background)))
             sprite.background = background
             self._backgrounds.append(sprite)
         self._cards = []
         for i in range(0,5):
             card = "./assets/card_back" + str(i+1) + ".png"
-            sprite = SpriteObject(405 + i*100, 450, card, scale=0.7, action=(lambda s: self.set_card(s.card)))
+            sprite = SpriteObject(405 + i*100, 380, card, scale=0.7, action=(lambda s: self.set_card(s.card)))
             sprite.card = card
             self._cards.append(sprite)
         self._components = [
             Label(480, 20, "Settings", font_size=64, font_name="Impact"),
-            Label(200, 150, "Player: ", font_size=36),
-            self._player_name,
-            Label(200, 210, "Bankroll: ", font_size=36),
+            Label(200, 150, "Bankroll: ", font_size=36),
             self._player_money,
-            Label(200, 270, "Decks: ", font_size=36),
+            Label(200, 210, "Decks: ", font_size=36),
             self._game_decks,
             Button(480, 600, width=240, color=Colors.white, text="Back", action=(lambda: self.gather_settings())),
-            Label(200, 350, "Background: ", font_size=36),
-            Label(200, 450, "Card Back:", font_size=36)
+            Label(200, 280, "Background: ", font_size=36),
+            Label(200, 380, "Card Back:", font_size=36)
         ] + self._backgrounds + self._cards
         self.set_background(settings.background)
         self._card = settings.card
