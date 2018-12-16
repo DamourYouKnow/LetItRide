@@ -5,6 +5,7 @@ from pygame.font import Font
 import pygame
 import string
 import math
+import sys
 from core import *
 from enum import Enum
 from typing import Tuple
@@ -126,7 +127,7 @@ class GameScreen(Screen):
             self._bet_pool += amount
             self._action.text = "Make $" + str(self._bet_pool * 3) + " Bet"
             for bet in self._bets:
-                bet.text = str((int(bet.text) if bet.text else 0) + amount)
+                bet.text = str(self._bet_pool)
 
     def side(self):
         if (self._side_state ==False):
@@ -142,7 +143,7 @@ class GameScreen(Screen):
                 return
         
             self._game.deal()
-            self._game.player.bet(self._bet_pool, self._side_state)
+            self._game.player.bet(self._bet_pool)
             for bet in self._bets:
                 bet.text = "$" + str(self._bet_pool)
             self._cards = [CardObject(700, 50, c, False) for c in self.game.player.hand]
@@ -431,8 +432,9 @@ class MainMenu(Screen):
         self._background = TextureManager.load(settings.background)
         self._buttons = [
 		    Button(400, 250, "Play", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_game),
-		    Button(400, 350, "Info", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_info),
-            Button(400, 450, "Settings", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_settings)
+		    Button(400, 340, "Info", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_info),
+            Button(400, 430, "Settings", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=self._to_settings),
+            Button(400, 520, "Quit", Colors.light_gray, down_color=Colors.gray, width=400, height=80, action=sys.exit)
         ]
         self._labels = [
 		    Label(340, 70, "Let It Ride Poker", font_size = 80, font_name="IMPACT", color=Colors.white),
@@ -490,8 +492,38 @@ class InfoScreen(Screen):
     def __init__(self, settings: Settings):
         self._next_screen = self
         self._background = TextureManager.load(settings.background)
-        self._buttons = [Button(10, 10, width=100, height=50, text="Main Menu", color=Colors.light_gray, down_color=Colors.gray, 
+        self._buttons = [Button(10, 10, width=100, height=50, text="Back", color=Colors.light_gray, down_color=Colors.gray, 
             action=(lambda: self.home(settings)))]
+        self._labels = [
+            Label(120, 10, "Rules", color=Colors.white, font_size=40),
+            TextArea(120, 60, [
+            "Let it ride is a poker game where the player receives 3 cards and attempts to form a poker hand with two community cards.",
+            "The game is based on deciding between 'riding' and 'pulling' a bet after each stage of the game. The gameplay is as follows:",
+            "  1. The player makes 3 bets, one is the anti and two ride bets.",
+            "  2. The player is then given 3 cards and 2 community cards are shown face down.",
+            "  3. The player is now given the choice of pulling back the first ride bet.",
+            "  4. The first community card is then exposed.",
+            "  5. The player now has the choice to pull back the second ride bet.",
+            "  6. The last community card is shown and payouts are paid accordingly.",
+            "The poker hands vary slightly from a normal poker game as Let it Ride is a fixed payout game. For example, two pairs may",
+            "give a payout of 2-1 rather than the pool like in other poker games. Furthermore, players need a pair of 10s or better",
+            "to receive any payout (ie. a pair of 9s does not qualify as a poker hand). Lastly, a side bet is offered prior to the deal",
+            "where players may bet on getting a 'mini' poker hand with their three cards."
+            ], color=Colors.white, background_color=None, centered=False),
+            Label(120, 340, "Features", color=Colors.white, font_size=40),
+            TextArea(120, 390, [
+              "To play, click a poker chip to choose a bet amount. Subsequent clicks will add on to the bet amount. Once ready, click the",
+              "bet button to make a bet. You will receive your three cards and see the community cards face down. You can then click ride",
+              "or pull to pull the first bet. Now one of the community cards will be revealed and you get to ride or pull the second bet.",
+              "After that, the payout will be calculated and paid accordingly based on the paytable to the right of the screen. The side",
+              "bet can be enabled using the side bet button and will be bet with the same amount as the rest of the bets. Some additional",
+              "features include configurability of deck numbers, bankroll, etc. in the settings screen, an autoplay button which will play",
+              "optimally automatically rebetting the same amount every time, a card selector screen that allows you to choose which cards",
+              "will show up the next hand and a couple different statistics screens showing the expected value and the probability breakdown",
+              "of the current hand."
+              ], color=Colors.white, background_color=None, centered=False),
+            Label(150, 625, "Created by Bailey D'Amour, Joseph Miller and Michael Cardy for Math3808, Fall 2018. Licensed under MIT. ", color=Colors.white),
+        ]
 
     def handle(self, event: Event):
         for button in self.buttons:
@@ -504,13 +536,17 @@ class InfoScreen(Screen):
     def buttons(self):
         return self._buttons
 
+    @property
+    def labels(self):
+        return self._labels
+
     def update(self):
         pass
 
     def draw(self, canvas: Surface):
         canvas.fill(Colors.white)
         canvas.blit(self._background, (0,0))
-        [item.draw(canvas) for item in self.buttons]
+        [item.draw(canvas) for item in self.buttons + self.labels]
     
     def next(self):
         return self._next_screen
@@ -523,32 +559,30 @@ class SettingsScreen(Screen):
     def __init__(self, settings: Settings=Settings()):
         CardObject.CARD_BACK = settings.card
         self._player_name = TextBox(350, 150, 600, 40, text=settings.player_name, placeholder_text="Name...", font_size=30)
-        self._player_money = TextBox(350, 210, 600, 40, text=str(settings.player_bankroll), placeholder_text="Money...", font_size=30)
-        self._game_decks = TextBox(350, 270, 600, 40, text=str(settings.game_decks), placeholder_text="Decks...", font_size=30)
+        self._player_money = TextBox(350, 150, 600, 40, text=str(settings.player_bankroll), placeholder_text="Money...", font_size=30)
+        self._game_decks = TextBox(350, 210, 600, 40, text=str(settings.game_decks), placeholder_text="Decks...", font_size=30)
         self._warning = Button(380, 600, width=440, color=Color(220, 100, 100, 1), text=None)
         self._backgrounds = []
         for i in range(0,5):
             background = "./assets/felt" + str(i+1) + ".png"
-            sprite = SpriteObject(400 + i*100, 350, background, scale=0.08, action=(lambda s: self.set_background(s.background)))
+            sprite = SpriteObject(400 + i*100, 280, background, scale=0.08, action=(lambda s: self.set_background(s.background)))
             sprite.background = background
             self._backgrounds.append(sprite)
         self._cards = []
         for i in range(0,5):
             card = "./assets/card_back" + str(i+1) + ".png"
-            sprite = SpriteObject(405 + i*100, 450, card, scale=0.7, action=(lambda s: self.set_card(s.card)))
+            sprite = SpriteObject(405 + i*100, 380, card, scale=0.7, action=(lambda s: self.set_card(s.card)))
             sprite.card = card
             self._cards.append(sprite)
         self._components = [
             Label(480, 20, "Settings", font_size=64, font_name="Impact"),
-            Label(200, 150, "Player: ", font_size=36),
-            self._player_name,
-            Label(200, 210, "Bankroll: ", font_size=36),
+            Label(200, 150, "Bankroll: ", font_size=36),
             self._player_money,
-            Label(200, 270, "Decks: ", font_size=36),
+            Label(200, 210, "Decks: ", font_size=36),
             self._game_decks,
             Button(480, 600, width=240, color=Colors.white, text="Back", action=(lambda: self.gather_settings())),
-            Label(200, 350, "Background: ", font_size=36),
-            Label(200, 450, "Card Back:", font_size=36)
+            Label(200, 280, "Background: ", font_size=36),
+            Label(200, 380, "Card Back:", font_size=36)
         ] + self._backgrounds + self._cards
         self.set_background(settings.background)
         self._card = settings.card
@@ -573,6 +607,8 @@ class SettingsScreen(Screen):
             self._warning.text = "Player money must be a number"
         elif (not self._game_decks.text.isdigit()):
             self._warning.text = "Game decks must be a number"
+        elif (int(self._game_decks.text) <= 0):
+            self._warning.text = "Game deck must be larger than 0"
         else:
             self._warning.text = None
 
