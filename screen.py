@@ -533,13 +533,14 @@ class InfoScreen(Screen):
               "bet button to make a bet. You will receive your three cards and see the community cards face down. You can then click ride",
               "or pull to pull the first bet. Now one of the community cards will be revealed and you get to ride or pull the second bet.",
               "After that, the payout will be calculated and paid accordingly based on the paytable to the right of the screen. The side",
-              "bet can be enabled using the side bet button. Once enabled, clicking the chips will increase the bet amount. Some additional",
+              "bet can be set by clicking the button beside 'Side Bet'. Once enabled, clicking the chips will increase the bet amount. ",
+              "You can switch back by clicking the 'Side Bet' button again. All bets are reset with the 'Reset Bet' button. Some additional",
               "features include configurability of deck numbers, bankroll, etc. in the settings screen, an autoplay button which will play",
               "optimally automatically rebetting the same amount every time, a card selector screen that allows you to choose which cards",
               "will show up the next hand and a couple different statistics screens showing the expected value and the probability breakdown",
               "of the current hand."
               ], color=Colors.white, background_color=None, centered=False),
-            Label(150, 625, "Created by Bailey D'Amour, Joseph Miller and Michael Cardy for Math3808, Fall 2018. Licensed under MIT. ", color=Colors.white),
+            Label(150, 650, "Created by Bailey D'Amour, Joseph Miller and Michael Cardy for Math3808, Fall 2018. Licensed under MIT. ", color=Colors.white),
         ]
 
     def handle(self, event: Event):
