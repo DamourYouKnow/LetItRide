@@ -279,6 +279,8 @@ class GameScreen(Screen):
             self._winning_side = None
             self._statistics = None
             self._bet_pool = 0
+            self._side_bet=0
+            self._side_bet_label.text="0"
             for bet in self._bets:
                 bet.text = None
 
