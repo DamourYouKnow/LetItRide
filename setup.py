@@ -20,8 +20,10 @@ options = {
 
 setup(
     name = "Let it ride",
+    author = "Micheal Cardy, Bailey D'Amour, and Joseph Miller",
     options = options,
-    version = "0.1.0",
-    description = '',
+    version = "0.2.0",
+    description = 'Final project for MATH 3808',
+    license = 'MIT',
     executables = executables
 )
