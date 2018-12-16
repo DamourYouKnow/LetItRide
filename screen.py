@@ -90,6 +90,7 @@ class GameScreen(Screen):
         self._side = Button(690, 500, width=148, height=50, text="Side Bet:OFF", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.side))
         self._side_state=False
+        self._side_bet_label= Button(680, 570, height=50, width=148, text="Side Bet Amount: 0", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
         
         payoffTexts = ["Payouts", "-------"] + ["%s: %d" % (str(k), v) for k,v in Hand.payouts.items() if k not in [HandType.high, HandType.pair]]
         self._payoffs = TextArea(1000, 5, payoffTexts, width=200, background_color=Colors.light_gray)
@@ -330,6 +331,7 @@ class GameScreen(Screen):
         self._statistics_button.draw(canvas)
         self._probability_distribution.draw(canvas)
         self._main_menu.draw(canvas)
+        self._side_bet_label.draw(canvas)
         if (self._stage == 0):
             self._card_selector_button.draw(canvas)
         if (self._show_statistics) and (self._statistics):
