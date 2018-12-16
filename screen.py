@@ -174,7 +174,7 @@ class GameScreen(Screen):
                 self.game.player.side_bet(int(self._side_bet_label.text))
                 self._game.player.payout_side()
                 payout_side = self._game.player.hand.payout_side(int(self._side_bet_label.text))
-                winText_side = str(self.game.player.hand.type_side) + " - Win $" + str(payout_side)
+                winText_side = "Side bet: " + str(self.game.player.hand.type_side) + " - Win $" + str(payout_side)
                 
                 self._winning_side = Button(250, 80, width=228, height=50, text=winText_side, color=Colors.white, 
                     down_color=Colors.white, padding=5, border_color=Colors.black)
@@ -209,7 +209,7 @@ class GameScreen(Screen):
                 action=(lambda: self.clear()))
             self._game.player.payout()
             payout = self._game.player.hand.payout(self._game.player.full_bet)
-            winText = str(self.game.player.hand.type) + " - Win $" + str(payout)
+            winText = "Main bet: " + str(self.game.player.hand.type) + " - Win $" + str(payout)
             self._winning = Button(250, 25, width=228, height=50, text=winText, color=Colors.white, 
                     down_color=Colors.white, padding=5, border_color=Colors.black)
             self._action.text = "Repeat Bet"
