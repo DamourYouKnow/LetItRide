@@ -482,6 +482,7 @@ class Player:
         self._money = money
         self._full_bet = 0
         self._portion_bet = 0
+        self._side_bet = 0
         self._hand = None
         
 
@@ -568,6 +569,10 @@ class Player:
         self._money -= bet * 3
         self._full_bet = bet * 3
         self._portion_bet = bet
+
+    def side_bet(self, bet: int):
+        self._money -= bet
+        self._side_bet = bet
 
     def pull(self):
         """
