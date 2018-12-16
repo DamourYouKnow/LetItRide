@@ -170,7 +170,7 @@ class GameScreen(Screen):
 
             [self._cards[i].flip() for i in range(3)]
             
-            self._wininng_side=None
+            self._winning_side=None
             if (self._side_bet > 0 and self._side_state==True):       
                 self.game.player.side_bet(int(self._side_bet_label.text))
                 self._game.player.payout_side()
