@@ -184,6 +184,22 @@ class Hand:
         for card in self._cards:
             yield card
 
+            
+    def payout_side(self, bet: int) -> int:
+        """
+        Computes the payout of a hand for a specified bet.
+        
+        Arguments:
+            bet {int} -- Bet amount.
+        
+        Returns:
+            int -- Payout of bet.
+        """
+        if self.type_side in Hand.sidePayouts:
+            # +1 for returning initial bet
+            return (Hand.sidePayouts[self.type_side]+1) * bet
+        return 0
+            
     def payout(self, bet: int) -> int:
         """
         Computes the payout of a hand for a specified bet.
