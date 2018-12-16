@@ -100,6 +100,7 @@ class GameScreen(Screen):
         self._next_screen = self
 
         self._bet_pool = 0
+        self._side_bet = 0
         self._bet_buttons = [
             SpriteObject(139, 575, "./assets/chip-1.png", scale=0.8, action=(lambda: self.add_bet(1))),
             SpriteObject(214, 575, "./assets/chip-5.png", scale=0.8, action=(lambda: self.add_bet(5))),
@@ -123,11 +124,17 @@ class GameScreen(Screen):
         ]
 
     def add_bet(self, amount):
-        if self._stage == 0 and self.game.player.money >= self._bet_pool*3 + (amount* 3):
+        if self._stage != 0:
+            return        
+        if not self._side_state and self.game.player.money >= self._bet_pool*3 + (amount* 3):
             self._bet_pool += amount
             self._action.text = "Make $" + str(self._bet_pool * 3) + " Bet"
             for bet in self._bets:
                 bet.text = str(self._bet_pool)
+        if self._side_state and self.game.player.money >= self._side_bet:
+            self._side_bet += amount
+
+            
 
     def side(self):
         if (self._side_state ==False):
