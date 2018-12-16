@@ -92,9 +92,13 @@ class GameScreen(Screen):
         self._side_state=False
         self._side_bet_label= Button(840, 500, height=50, width=75, text="0", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
         
-        payoffTexts = ["Payouts", "-------"] + ["%s: %d" % (str(k), v) for k,v in Hand.payouts.items() if k not in [HandType.high, HandType.pair]]
+        payouts = ["%s %d:1" % (str(k), v) for k,v in sorted(Hand.payouts.items(), key=lambda x: x[1]) if k not in [HandType.high, HandType.pair]]
+        payouts.reverse()
+        payoffTexts = ["Payouts", "-------"] + payouts
         self._payoffs = TextArea(1000, 5, payoffTexts, width=200, background_color=Colors.light_gray)
-        payoffSideTexts = ["Sidebet Payouts", "---------------"] + ["%s: %d" % (str(z), x) for z,x in Hand.sidePayouts.items() if z not in [HandType.high, HandType.pair]]
+        sidePayouts = ["%s: %d:1" % (str(z), x) for z,x in sorted(Hand.sidePayouts.items(), key=lambda x: x[1])if z not in [HandType.high, HandType.pair]]
+        sidePayouts.reverse()
+        payoffSideTexts = ["Sidebet Payouts", "---------------"] + sidePayouts
         self._payoffs_side = TextArea(1000, 275, width=200, texts=payoffSideTexts, background_color=Colors.light_gray)
         self._statistics = None
         self._autoplay = False
