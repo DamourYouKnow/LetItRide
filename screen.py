@@ -142,7 +142,7 @@ class GameScreen(Screen):
                 return
         
             self._game.deal()
-            self._game.player.bet(self._bet_pool, self._side_state)
+            self._game.player.bet(self._bet_pool)
             for bet in self._bets:
                 bet.text = "$" + str(self._bet_pool)
             self._cards = [CardObject(700, 50, c, False) for c in self.game.player.hand]
