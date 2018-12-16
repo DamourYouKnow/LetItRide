@@ -270,7 +270,7 @@ class GameScreen(Screen):
             texts.append(("[Nothing]").ljust(18) + " # hands=" + str(nothings) + ", p=" + ("%.3f" % (nothings/count)))
             if (deck_count == math.inf):
                 texts.insert(0, "# decks >= 10, simulating inf. deck")
-            self._probability = TextArea(350, 100, texts, background_color=Colors.white, width=500, centered=False, font_name="Courier")
+            self._probability = TextArea(350, 120, texts, background_color=Colors.white, width=500, centered=False, font_name="Courier")
 
     def clear(self):
         if (self._stage == 0):
