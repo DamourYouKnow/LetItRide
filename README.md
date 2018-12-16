@@ -7,6 +7,9 @@ Ride using python's pygame module.
 
 This version of Let it Ride follows the rules outlined here: https://en.wikipedia.org/wiki/Let_It_Ride_(card_game)
 
+Latest release [1.0.0] can be downloaded here: https://github.com/DamourYouKnow/LetItRide/releases/tag/v1.0.0. Download the zip
+or installer and launch "Let it Ride.exe"
+
 # Features
 In addition to the basic features of Let it Ride poker, this version
 also features
