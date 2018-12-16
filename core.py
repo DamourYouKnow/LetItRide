@@ -554,7 +554,7 @@ class Player:
         for _ in range(0, count):
             self._hand.cards.append(self._game.deck.draw())
 
-    def bet(self, bet: int, side: bool):
+    def bet(self, bet: int):
         """
         Places a bet for a player.
 
@@ -564,8 +564,8 @@ class Player:
         Arguments:
             bet {int} -- Indivivual bet amount.
         """
-        if (side==True):
-            self._money-=bet
+        #if (side==True):
+            #self._money-=bet
         self._money -= bet * 3
         self._full_bet = bet * 3
         self._portion_bet = bet
