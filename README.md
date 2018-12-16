@@ -1,14 +1,15 @@
 # Let it Ride [![Build Status](https://travis-ci.com/DamourYouKnow/LetItRide.svg?token=rfuE5AprBEX3cX7ehdRp&branch=master)](https://travis-ci.com/DamourYouKnow/LetItRide)
 Final project for MATH 3808 by 
-Bailey D'Amour (101013271), Joseph Miller (101038990) and Michael Cardy (101034358).
+Bailey D'Amour, Joseph Miller, and Michael Cardy.
 This project addresses question 5.f from the final
 topics document. It implements the game of Let it
-Ride using python's pygame module.
+Ride using python's [pygame](https://www.pygame.org/news) module.
 
 This version of Let it Ride follows the rules outlined here: https://en.wikipedia.org/wiki/Let_It_Ride_(card_game)
 
-Latest release [1.0.0] can be downloaded here: https://github.com/DamourYouKnow/LetItRide/releases/tag/v1.0.0. Download the zip
-or installer and launch "Let it Ride.exe"
+Latest release can be downloaded here: https://github.com/DamourYouKnow/LetItRide/releases/   
+Download the zip
+or installer and launch "Let it Ride.exe".
 
 # Features
 In addition to the basic features of Let it Ride poker, this version
