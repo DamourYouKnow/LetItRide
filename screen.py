@@ -138,11 +138,11 @@ class GameScreen(Screen):
         
     def action(self, pull=False):
         if (self._stage == 0):
-            if self._bet_pool == 0:
+            if self._bet_pool <= 0:
                 return
         
             self._game.deal()
-            self._game.player.bet(self._bet_pool)
+            self._game.player.bet(self._bet_pool, self._side_state)
             for bet in self._bets:
                 bet.text = "$" + str(self._bet_pool)
             self._cards = [CardObject(700, 50, c, False) for c in self.game.player.hand]
@@ -159,8 +159,8 @@ class GameScreen(Screen):
                 #payout = self._game.player.hand.payout(self._game.player.full_bet)
                 #winText_side = str(self.game.player.hand.type_side) + " - Win $"   #+ str(payout)
                 
-                self._game.player.payout()
-                payout_side = self._game.player.hand.payout_side(self._game.player.full_bet)
+                self._game.player.payout_side()
+                payout_side = self._game.player.hand.payout_side(int(self._game.player.full_bet/3))
                 winText_side = str(self.game.player.hand.type_side) + " - Win $" + str(payout_side)
                 
                 self._winning_side = Button(250, 80, width=228, height=50, text=winText_side, color=Colors.white, 
@@ -434,7 +434,7 @@ class MainMenu(Screen):
         ]
         self._labels = [
 		    Label(340, 70, "Let It Ride Poker", font_size = 80, font_name="IMPACT", color=Colors.white),
-            Label(361, 650, "Created by Bailey D'Amour, Joey Miller and Michael Cardy", color=Colors.white)
+            Label(361, 650, "Created by Bailey D'Amour, Joseph Miller and Michael Cardy", color=Colors.white)
 		]
         if not MainMenu.LOADED:
             [TextureManager.load("./assets/card_back" + str(i) + ".png") for i in range(1,6)]
