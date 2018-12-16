@@ -605,6 +605,8 @@ class SettingsScreen(Screen):
             self._warning.text = "Player money must be a number"
         elif (not self._game_decks.text.isdigit()):
             self._warning.text = "Game decks must be a number"
+        elif (int(self._game_decks.text) <= 0):
+            self._warning.text = "Game deck must be larger than 0"
         else:
             self._warning.text = None
 
