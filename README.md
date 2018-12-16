@@ -29,7 +29,7 @@ pip install idna
 ```
 To create a package with an executable file:
 ```
-python setup.py
+python setup.py build
 ```
 To create an MSI installer:
 ```
