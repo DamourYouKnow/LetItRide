@@ -90,7 +90,7 @@ class GameScreen(Screen):
         self._side = Button(690, 500, width=148, height=50, text="Side Bet:OFF", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.side))
         self._side_state=False
-        self._side_bet_label= Button(680, 570, height=50, width=148, text="Side Bet Amount: 0", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
+        self._side_bet_label= Button(840, 500, height=50, width=75, text="0", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
         
         payoffTexts = ["Payouts", "-------"] + ["%s: %d" % (str(k), v) for k,v in Hand.payouts.items() if k not in [HandType.high, HandType.pair]]
         self._payoffs = TextArea(1000, 5, payoffTexts, width=200, background_color=Colors.light_gray)
@@ -134,9 +134,8 @@ class GameScreen(Screen):
                 bet.text = str(self._bet_pool)
         if self._side_state and self.game.player.money >= self._side_bet:
             self._side_bet += amount
-
+            self._side_bet_label.text = str(self._side_bet)
             
-
     def side(self):
         if (self._side_state ==False):
             self._side_state = True
