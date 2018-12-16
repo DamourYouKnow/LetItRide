@@ -138,7 +138,7 @@ class GameScreen(Screen):
         
     def action(self, pull=False):
         if (self._stage == 0):
-            if self._bet_pool <= 0:
+            if (self._bet_pool < 0):
                 return
         
             self._game.deal()
@@ -200,6 +200,8 @@ class GameScreen(Screen):
             self._winning = Button(250, 25, width=228, height=50, text=winText, color=Colors.white, 
                     down_color=Colors.white, padding=5, border_color=Colors.black)
             self._action.text = "Repeat Bet"
+            if (self._bet_pool < 0):
+                return
 
     def home(self, settings):
         settings.player_bankroll = self._game.player.money
