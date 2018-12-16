@@ -2,7 +2,7 @@ from cx_Freeze import setup, Executable
 
 base = None    
 
-executables = [Executable("main.py", base=base)]
+executables = [Executable("main.py", base=base, targetName="Let it Ride.exe")]
 
 include_files = [
     "README.md",
