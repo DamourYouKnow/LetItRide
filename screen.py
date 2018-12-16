@@ -164,9 +164,9 @@ class GameScreen(Screen):
             
             if (self._side_state==True):
                 
-                self.game.player.side_bet(int(self._game.player.full_bet/3));
+                self.game.player.side_bet(int(self._side_bet_label.text));
                 self._game.player.payout_side()
-                payout_side = self._game.player.hand.payout_side(int(self._game.player.full_bet/3))
+                payout_side = self._game.player.hand.payout_side(int(self._side_bet_label.text))
                 winText_side = str(self.game.player.hand.type_side) + " - Win $" + str(payout_side)
                 
                 self._winning_side = Button(250, 80, width=228, height=50, text=winText_side, color=Colors.white, 

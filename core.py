@@ -518,7 +518,15 @@ class Player:
             int -- Combined bet of player.
         """
         return self._full_bet
-
+    
+    @property
+    def side_bet_amount(self) -> int:
+        """
+        Returns:
+            int -- Combined bet of player.
+        """
+        return self._side_bet
+    
     @property
     def portion_bet(self) -> int:
         """
@@ -571,6 +579,7 @@ class Player:
         self._portion_bet = bet
 
     def side_bet(self, bet: int):
+        self._side_bet_amount=bet
         self._money -= bet
         self._side_bet = bet
 
@@ -590,7 +599,7 @@ class Player:
         """
         Adds the payout of a player's hand to their bankroll.
         """
-        self._money += self._hand.payout_side(int(self._full_bet/3))
+        self._money += self._hand.payout_side(int(self._side_bet_amount))
     
     def payout(self):
         """
