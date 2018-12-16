@@ -126,7 +126,7 @@ class GameScreen(Screen):
             self._bet_pool += amount
             self._action.text = "Make $" + str(self._bet_pool * 3) + " Bet"
             for bet in self._bets:
-                bet.text = str((int(bet.text) if bet.text else 0) + amount)
+                bet.text = str((int(bet.text.replace('$', '')) if bet.text else 0) + amount)
 
     def side(self):
         if (self._side_state ==False):
