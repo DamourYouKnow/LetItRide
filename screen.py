@@ -87,10 +87,10 @@ class GameScreen(Screen):
         self._background = TextureManager.load(settings.background)
         self._stage = 0
         self._bankroll = Button(100, 500, height=50, width=148, text="Bankroll: ", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
-        self._side = Button(690, 500, width=148, height=50, text="Side Bet:OFF", color=Colors.light_gray, down_color=Colors.gray,
+        self._side = Button(690, 500, width=148, height=50, text="Main Bet", color=Colors.light_gray, down_color=Colors.gray,
             action=(self.side))
         self._side_state=False
-        self._side_bet_label= Button(840, 500, height=50, width=75, text="0", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
+        self._side_bet_label= Button(840, 500, height=50, width=75, text="Side: 0", color=Colors.white, down_color=Colors.white, padding=5, border_color=Colors.black)
         
         payouts = ["%s %d:1" % (str(k), v) for k,v in sorted(Hand.payouts.items(), key=lambda x: x[1]) if k not in [HandType.high, HandType.pair]]
         payouts.reverse()
@@ -138,15 +138,15 @@ class GameScreen(Screen):
                 bet.text = str(self._bet_pool)
         if self._side_state and self.game.player.money >= self._side_bet:
             self._side_bet += amount
-            self._side_bet_label.text = str(self._side_bet)
+            self._side_bet_label.text = "Side: " + str(self._side_bet)
             
     def side(self):
         if (self._side_state ==False):
             self._side_state = True
-            self._side.text="Side Bet: ON"
+            self._side.text="Side Bet"
         else:
             self._side_state = False
-            self._side.text="Side Bet: OFF"
+            self._side.text="Main Bet"
         
     def action(self, pull=False):
         if (self._stage == 0):
@@ -282,7 +282,7 @@ class GameScreen(Screen):
             self._statistics = None
             self._bet_pool = 0
             self._side_bet=0
-            self._side_bet_label.text="0"
+            self._side_bet_label.text="Side: 0"
             for bet in self._bets:
                 bet.text = None
 
