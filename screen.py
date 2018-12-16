@@ -152,6 +152,10 @@ class GameScreen(Screen):
         if (self._stage == 0):
             if (self._bet_pool <= 0):
                 return
+            if (self._bet_pool*3 + int(self._side_bet_label.text) > self._game.player.money):
+                self._winning = Button(250, 25, width=228, height=50, text="Can't make bet, not enough money", color=Colors.white, 
+                    down_color=Colors.white, padding=5, border_color=Colors.black)
+                return
         
             self._game.deal()
             self._game.player.bet(self._bet_pool)
